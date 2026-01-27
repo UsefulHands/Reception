@@ -1,0 +1,14 @@
+### Yeni Misafir Oluştur (POST)
+POST http://localhost:8080/api/v1/guests
+Content-Type: application/json
+
+{
+  "firstName": "Ahmet",
+  "lastName": "Yılmaz",
+  "identificationNumber": "12345678901",
+  "phoneNumber": "5551112233",
+  "email": "ahmet@yilmaz.com"
+}
+
+### Tüm Misafirleri Listele (GET)
+GET http://localhost:8080/api/v1/guests
