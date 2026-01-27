@@ -17,7 +17,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "../../resources/static",
+              "base": "../../main/resources/static",
               "browser": ""
             },
             "browser": "src/main.ts",
