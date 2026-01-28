@@ -1,6 +1,7 @@
 package com.reception.features.user;
 
 import com.reception.features.user.UserDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +13,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody UserDto userDto) {
+    public UserDto register(@Valid @RequestBody UserDto userDto) {
         return userService.register(userDto);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody UserDto userDto) {
+    public String login(@Valid @RequestBody UserDto userDto) {
         return userService.login(userDto);
     }
 }

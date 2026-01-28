@@ -9,8 +9,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
 @Data
 @Builder
 @NoArgsConstructor
@@ -26,7 +24,7 @@ public class UserEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Şimdilik rol yönetimi (Admin/User) yapmıyoruz, boş kalsın.
+        return List.of();
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

@@ -1,6 +1,7 @@
 package com.reception.features.guest;
 
-import com.reception.common.exception.BaseException;
+import com.reception.common.exception.ConflictException;
+import com.reception.features.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,20 +14,32 @@ import java.util.List;
 public class GuestService {
 
     private final GuestRepository guestRepository;
+    private final GuestMapper guestMapper;
 
-    public List<GuestEntity> getAllGuests() {
-        log.info("Tüm misafir listesi getiriliyor...");
-        return guestRepository.findAll();
+    public List<GuestDto> getAllGuests() {
+        return guestRepository.findAll().stream()
+                .map(guestMapper::toDto)
+                .toList();
     }
 
-    public GuestEntity createGuest(GuestEntity guest) {
-        guestRepository.findByIdentificationNumber(guest.getIdentificationNumber())
-                .ifPresent(existingGuest -> {
-                    log.error("Kayıt hatası: {} TC numaralı misafir zaten mevcut.", guest.getIdentificationNumber());
-                    throw new BaseException("Bu kimlik numarası ile zaten bir kayıt bulunmaktadır.");
-                });
+    public GuestDto createGuest(GuestDto guestDto) {
+        if (guestRepository.existsByIdentificationNumber(guestDto.getIdentificationNumber())) {
+            throw new ConflictException("Someone else has this ID number!");
+        }
 
-        log.info("Yeni misafir kaydediliyor: {} {}", guest.getFirstName(), guest.getLastName());
-        return guestRepository.save(guest);
+        if (guestRepository.existsByEmail(guestDto.getEmail())) {
+            throw new ConflictException("This email is already in use!");
+        }
+
+        if (guestRepository.existsByPhoneNumber(guestDto.getPhoneNumber())) {
+            throw new ConflictException("This phone number is already in use!");
+        }
+
+        GuestEntity entity = guestMapper.toEntity(guestDto);
+
+        GuestEntity saved = guestRepository.save(entity);
+        log.info("Guest created with ID: {}", saved.getId());
+
+        return guestMapper.toDto(saved);
     }
 }

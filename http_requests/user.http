@@ -1,0 +1,154 @@
+### 1. New user (Register)
+# Success (200 or 201)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "veli2",
+  "password": "123"
+}
+
+> {%
+    client.test("Register successful", function() {
+        client.assert(response.status === 200 || response.status === 201, "Expected 200/201");
+    });
+%}
+
+###
+
+### 2. User entry (Login)
+# Success (200 OK) and saves token
+POST http://localhost:8080/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "veli2",
+  "password": "123"
+}
+
+> {%
+    client.test("Login successful", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("auth_token", response.body);
+    client.log("Token hafızaya alındı: " + client.global.get("auth_token"));
+%}
+
+###
+
+### 3. Register error (Username Exists)
+# Should fail with 400 or 409
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "ali",
+  "password": "some_password"
+}
+
+> {%
+    client.test("Fail due to duplicate username", function() {
+        client.assert(response.status === 400 || response.status === 409, "Expected 400/409");
+    });
+%}
+
+###
+
+### 4. Login error (Wrong password)
+# Should fail with 401 Unauthorized
+POST http://localhost:8080/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "ali",
+  "password": "wrong_pass_123"
+}
+
+> {%
+    client.test("Fail due to wrong password", function() {
+        client.assert(response.status === 401, "Expected 401 but got " + response.status);
+    });
+%}
+
+###
+
+### 5. Login error (User doesn't exist)
+# Should fail with 401 or 404
+POST http://localhost:8080/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "person_nonexist",
+  "password": "123"
+}
+
+> {%
+    client.test("Fail due to non-existent user", function() {
+        client.assert(response.status === 401 || response.status === 404, "Expected 401/404");
+    });
+%}
+
+###
+
+### 6. Register error (Misinformation)
+# Should fail with 400 Bad Request (Validation)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "ak",
+  "password": "b"
+}
+
+> {%
+    client.test("Fail due to empty fields", function() {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+###
+
+### 7. Register error (Weak password)
+# Validates minimum password length (400 Bad Request)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "new_user",
+  "password": "1"
+}
+
+> {%
+    client.test("Fail due to weak password", function() {
+        client.assert(response.status === 400, "Validation should reject short password");
+    });
+%}
+
+###
+
+### 8. Register error (Empty username)
+# Validates that username cannot be blank (400 Bad Request)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": "asdfsadf"
+}
+
+> {%
+    client.test("Fail due to empty username", function() {
+        client.assert(response.status === 400, "Validation should reject empty username");
+    });
+%}
+
+###
+
+### 9. Login (Case Insensitive Username)
+POST http://localhost:8080/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "VelI2",
+  "password": "123"
+}

@@ -64,3 +64,5 @@ The following are strictly excluded via .gitignore:
 * target/ (Java build artifacts)
 * src/main/resources/static/* (Auto-generated frontend assets)
 * IDE specific configurations (.idea, .vscode)
+
+.env file has been replaced with the internal Environment Configuration.

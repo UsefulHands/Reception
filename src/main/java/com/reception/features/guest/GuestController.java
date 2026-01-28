@@ -1,7 +1,9 @@
 package com.reception.features.guest;
 
 import com.reception.features.guest.GuestDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,19 +15,15 @@ import java.util.stream.Collectors;
 public class GuestController {
 
     private final GuestService guestService;
-    private final GuestMapper guestMapper;
 
     @PostMapping
-    public GuestDto createGuest(@RequestBody GuestDto guestDto) {
-        GuestEntity entity = guestMapper.toEntity(guestDto);
-        GuestEntity savedEntity = guestService.createGuest(entity);
-        return guestMapper.toDto(savedEntity);
+    @ResponseStatus(HttpStatus.CREATED)
+    public GuestDto createGuest(@Valid @RequestBody GuestDto guestDto) {
+        return guestService.createGuest(guestDto);
     }
 
     @GetMapping
     public List<GuestDto> getAllGuests() {
-        return guestService.getAllGuests().stream()
-                .map(guestMapper::toDto)
-                .collect(Collectors.toList());
+        return guestService.getAllGuests();
     }
 }

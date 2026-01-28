@@ -6,8 +6,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "guests")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

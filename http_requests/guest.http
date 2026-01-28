@@ -1,0 +1,117 @@
+### 1. Add guest
+# Everything works (201 Created)
+POST http://localhost:8080/api/v1/guests
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "firstName": "Hsan",
+  "lastName": "Yılmaz",
+  "identificationNumber": "12346678901",
+  "email": "hakan@sil.com",
+  "phoneNumber": "5551s12233",
+  "birthDate": "1990-01-01"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201 || response.status === 200, "Response status is not 201/200");
+    });
+%}
+
+###
+
+### 2. Get guest list
+# Returns list if authorized (200 OK)
+GET http://localhost:8080/api/v1/guests
+Authorization: Bearer {{auth_token}}
+
+> {%
+    client.test("Should return guest list", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+### 3. Add guest error (Identity Number Exists)
+# Cannot add guest with the same identification number (400 or 409)
+POST http://localhost:8080/api/v1/guests
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "firstName": "Hakan",
+  "lastName": "Duplicate",
+  "identificationNumber": "12345678901",
+  "email": "another@email.com"
+}
+
+> {%
+    client.test("Should fail due to duplicate ID", function() {
+        client.assert(response.status === 400 || response.status === 409, "Expected 400/409 but got " + response.status);
+    });
+%}
+
+###
+
+### 4. Add guest error (Missing fields)
+# Should fail when required fields like firstName or ID are empty (400 Bad Request)
+POST http://localhost:8080/api/v1/guests
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "lastName": "NoFirstName",
+  "identificationNumber": ""
+}
+
+> {%
+    client.test("Should fail due to missing fields", function() {
+        client.assert(response.status === 400, "Expected 400 but got " + response.status);
+    });
+%}
+
+###
+
+### 5. Add guest error (Invalid email format)
+# Validation should catch malformed email (400 Bad Request)
+POST http://localhost:8080/api/v1/guests
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "firstName": "Ali",
+  "email": "not-an-email-address"
+}
+
+> {%
+    client.test("Should fail due to invalid email", function() {
+        client.assert(response.status === 400, "Expected 400 but got " + response.status);
+    });
+%}
+
+###
+
+### 6. Get guest list error (Invalid token)
+# Request should be rejected if token is tampered (401 Unauthorized)
+GET http://localhost:8080/api/v1/guests
+Authorization: Bearer {{auth_token}}modified
+
+> {%
+    client.test("Should fail due to invalid token", function() {
+        client.assert(response.status === 401, "Expected 401 but got " + response.status);
+    });
+%}
+
+###
+
+### 7. Get guest list error (No token)
+# Request should be rejected without any credentials (401 or 403)
+GET http://localhost:8080/api/v1/guests
+
+> {%
+    client.test("Should fail due to missing token", function() {
+        client.assert(response.status === 401 || response.status === 403, "Expected 401/403 but got " + response.status);
+    });
+%}

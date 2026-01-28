@@ -1,7 +1,9 @@
 package com.reception.features.user;
 
+import com.reception.common.exception.UserNotFoundException;
+import com.reception.common.exception.UsernameAlreadyExistsException;
+import com.reception.common.exception.WrongPasswordException;
 import com.reception.common.security.JwtService;
-import com.reception.features.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,29 +14,33 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService; // Token üretmek için ekledik
+    private final JwtService jwtService;
 
-    public String register(UserDto userDto) {
-        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+    public UserDto register(UserDto userDto) {
+        if (userRepository.existsByUsernameIgnoreCase(userDto.getUsername())) {
+            throw new UsernameAlreadyExistsException("This username has been taken!");
+        }
+
         UserEntity user = UserEntity.builder()
                 .username(userDto.getUsername())
-                .password(encodedPassword)
+                .password(passwordEncoder.encode(userDto.getPassword()))
                 .build();
-        userRepository.save(user);
-        return "Kullanıcı başarıyla kaydedildi!";
+
+        UserEntity savedUser = userRepository.save(user);
+
+        userDto.setId(savedUser.getId());
+        return userDto;
     }
 
     public String login(UserDto userDto) {
-        // 1. Kullanıcıyı veritabanında ara
-        UserEntity user = userRepository.findByUsername(userDto.getUsername())
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı!"));
 
-        // 2. Gelen şifre ile veritabanındaki (hashlenmiş) şifreyi karşılaştır
+        UserEntity user = userRepository.findByUsernameIgnoreCase(userDto.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User didn't find"));
+
         if (passwordEncoder.matches(userDto.getPassword(), user.getPassword())) {
-            // 3. Şifre doğruysa Token üret ve dön
             return jwtService.generateToken(user.getUsername());
         } else {
-            throw new RuntimeException("Hatalı şifre!");
+            throw new WrongPasswordException("Wrong password!");
         }
     }
 }
