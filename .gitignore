@@ -8,6 +8,8 @@ target/
 src/main/resources/static/*
 !.gitkeep
 
+*.db
+*.sqlite
 .env
 src/main/resources/application.properties
 
