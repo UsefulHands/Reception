@@ -11,7 +11,6 @@ src/main/resources/static/*
 *.db
 *.sqlite
 .env
-src/main/resources/application.properties
 
 ### STS ###
 .apt_generated
