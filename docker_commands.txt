@@ -1,0 +1,49 @@
+docker build (creating images)
+docker-compose up --build -d (build from Dockerfile + Run the Image + Apply Configurations + Connect the Wires (Networking))
+
+docker ps (shows which containers are running in which port)
+docker ps -a (shows all the containers created inactive or active)
+docker pull "name_of_image" (installs ready images)(such as nginx, or postgres etc.)
+docker images (shows all images created such as postgres and app itself)
+
+docker run -d \
+  --name reception-backend \
+  -p 8080:8080 \
+  --network reception_network \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://reception_postgres:5432/reception_db \
+  -e SPRING_DATASOURCE_USERNAME=reception_admin \
+  -e SPRING_DATASOURCE_PASSWORD=Secure_Pass_987234!!_X \
+  -e JWT_SECRET_KEY=404E635266556A586E3272357538782F413F4428472B4B6250645367566B597 \
+  reception-app:latest (runs an image to create containers)(postgres:15 could be an example for an image)
+
+docker start "container_id or container_name" (activate container)
+docker stop "container_id or container_name" (inactivate container)
+
+docker container prune (deletes all the containers inactive)
+docker rmi "image_id" (deletes single image)
+docker rm "container_id" (deletes single passive container)
+
+docker rm $(docker ps -aq) (deletes all the inactive containers)
+docker rm -f $(docker ps -aq) (deletes all the containers no matter what)
+
+docker build -t reception-app (creating an image reception app due to our Dockerfile)
+
+{
+docker exec -it reception_postgres psql -U reception_admin -d reception_db
+
+docker exec -it: "Şu çalışan kutunun içine gir ve bana bir terminal ver."
+reception_postgres: Girmek istediğin veritabanı kutusunun (container) adı.
+psql: Postgres'in kendi içindeki komut satırı aracını çalıştır.
+-U reception_admin: Kullanıcı adın (Senin .env veya compose dosyasında neyse o).
+-d reception_db: Hangi veritabanına bağlanmak istediğin.
+}
+
+Notes: docker build is creating an image from scratch.
+       docker run is creating a container form image.
+       images are for creating containers
+       docker start is inverse of docker stop.
+
+       --help command is very useful.
+
+       Dockerfile is used to create images.
+
