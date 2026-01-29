@@ -1,6 +1,6 @@
 # Reception Management System
 
-This project is a full-stack Reception Management System built with Spring Boot 3 and Angular. It features a robust security layer with JWT, containerized PostgreSQL, automated Audit Logs, and comprehensive API documentation via Swagger.
+This project is a full-stack Reception Management System, feature based, built with Spring Boot 3 and Angular. It features a robust security layer with JWT, containerized PostgreSQL, automated Audit Logs, and comprehensive API documentation via Swagger.
 
 ---
 
@@ -68,7 +68,14 @@ This process populates the src/main/resources/static folder with the necessary a
 
 * Security: Stateless authentication using JWT via JwtAuthenticationFilter. Security secrets are managed through environment variables.
 * Audit Logs: Integrated JPA Auditing to automatically track created_by, created_at, updated_by, and updated_at fields for all database entities.
+* Console logs: Integrated console logs via @Slf4j.
 * API Versioning: All REST endpoints are prefixed with /api/v1.
+* Docker: The program itself and its database is running on docker.
+* Postgres: Selected Postgres for database.
+* Angular: Angular is selected for frontend due to its compatibility with my system.
+* Global Exception Handling: Created an exception handling mechanism for better understanding of HTTPs.
+* Swagger: Implemented Swagger for easing backend developments.
+* Flyway: Used to initialization of db migrations.
 * Architecture: Organized into common (security/config) and features (business logic) packages for better maintainability.
 * Testing: Backend unit and integration tests can be executed using mvn test.
 
