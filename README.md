@@ -39,6 +39,7 @@ The project uses a Dockerized PostgreSQL instance to ensure environment consiste
    docker logs -f reception_backend
 
 The database is available at localhost:5432 and persists data in a local volume named postgres_data.
+Be careful. Port 5432 and 8080 should be good to go for this project.
 
 ---
 
@@ -75,7 +76,7 @@ This process populates the src/main/resources/static folder with the necessary a
 * Angular: Angular is selected for frontend due to its compatibility with my system.
 * Global Exception Handling: Created an exception handling mechanism for better understanding of HTTPs.
 * Swagger: Implemented Swagger for easing backend developments.
-* Flyway: Used to initialization of db migrations.
+* Flyway: Database migrations are managed via Flyway for version control.
 * Architecture: Organized into common (security/config) and features (business logic) packages for better maintainability.
 * Testing: Backend unit and integration tests can be executed using mvn test.
 
