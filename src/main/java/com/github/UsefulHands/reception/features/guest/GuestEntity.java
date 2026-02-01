@@ -1,21 +1,19 @@
 package com.github.UsefulHands.reception.features.guest;
 
 import com.github.UsefulHands.reception.common.entity.BaseEntity;
+import com.github.UsefulHands.reception.features.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "guests")
 @Data
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@EqualsAndHashCode(callSuper = true)
 public class GuestEntity extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(nullable = false)
     private String firstName;
@@ -23,12 +21,13 @@ public class GuestEntity extends BaseEntity {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(unique = true, nullable = false, length = 11)
-    private String identificationNumber;
-
+    @Column(unique = true)
     private String phoneNumber;
 
-    private String email;
+    @Column(unique = true)
+    private String identityNumber;
 
-    private LocalDate birthDate;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private UserEntity user;
 }

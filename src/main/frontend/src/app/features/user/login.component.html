@@ -1,0 +1,30 @@
+<div class="container d-flex justify-content-center align-items-center vh-100">
+  <div class="card border-0 shadow p-3 mb-5 bg-white rounded" style="width: 25rem;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4 text-primary fw-bold">Reception Login</h2>
+
+      <div class="form-group mb-3">
+        <label class="form-label fw-semibold">Username</label>
+        <input #user type="text"
+               class="form-control"
+               placeholder="Enter your username">
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label fw-semibold">Password</label>
+        <input #pass type="password"
+               class="form-control"
+               placeholder="••••••">
+      </div>
+
+      <button (click)="onLogin(user.value, pass.value)"
+              class="btn btn-primary btn-lg w-100 shadow-sm">
+        Login
+      </button>
+
+      <div class="mt-3 text-center">
+        <small class="text-muted">JWT is active</small>
+      </div>
+    </div>
+  </div>
+</div>

@@ -38,6 +38,8 @@ psql: Postgres'in kendi içindeki komut satırı aracını çalıştır.
 -d reception_db: Hangi veritabanına bağlanmak istediğin.
 }
 
+docker logs -f <container_id> @Slf4j
+
 Notes: docker build is creating an image from scratch.
        docker run is creating a container form image.
        images are for creating containers

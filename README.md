@@ -18,11 +18,18 @@ Before you begin, ensure you have the following installed:
 
 The application requires specific environment variables to manage sensitive data. These are not stored in the repository for security reasons.
 
-1. Create a .env file in the root directory.
-2. Add the following keys:
-   DB_USER=your_postgres_username
-   DB_PASSWORD=your_postgres_password
-   JWT_SECRET_KEY=your_super_secret_key
+Open ReceptionApplication environments and put this environments
+
+1. DB_USER=reception_admin;
+2. DB_PASSWORD=your_password;
+3. DB_NAME=reception_db;
+4. SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/reception_db;
+5. SPRING_DATASOURCE_USERNAME=reception_admin;
+6. SPRING_DATASOURCE_PASSWORD=same_with_DB_PASSWORD;
+7. JWT=your_unique_jwt_key;
+
+As a second step you have to create a .env file in the root directory.
+And put the exact same environments as a plain string.
 
 ---
 
@@ -30,10 +37,10 @@ The application requires specific environment variables to manage sensitive data
 
 The project uses a Dockerized PostgreSQL instance to ensure environment consistency.
 
-1. Open your terminal in the root folder.
+1. After downloading docker desktop, open your terminal in the root folder.
 2. Run the following command to start the database and the application:
    docker-compose up --build -d
-3. To stop all services and wipe volumes (for a fresh start):
+3. To stop all services and wipe volumes (for a fresh start, use to reset):
    docker-compose down -v
 4. To monitor backend logs:
    docker logs -f reception_backend
@@ -90,3 +97,29 @@ The following are strictly excluded via .gitignore to maintain security and keep
 * node_modules/ (Frontend dependencies)
 * src/main/resources/static/* (Auto-generated frontend assets)
 * IDE specific configurations (.idea, .vscode)
+
+## Important
+
+Very important
+* You have to donwload docker desktop
+* You have to install npm inside terminal of src/main/frontend
+* After proper installs, create your .env file and change the system environments due to this file (Section 1)
+* port 8082 is for docker-app.
+* port 8280 is local-app.
+* port 4200 is frontend-app.
+* port 5432 is postgres-db.
+
+## Running the project
+
+### 1.Local Run
+* If docker and npm install is ok,
+* Frontend: Open directory src/main/frontend and use command (npm run build), after use command (ng serve) and check url (http://localhost:4200/)
+* Db : You still have to use command (docker compose --build -d db) to acquire a db.
+* Backend: Run the project and check url (http://localhost:8080/swagger-ui/index.html)
+
+### 2.Docker-Container
+* If docker and npm install is ok,
+1. Open directory src/main/frontend and use command (npm run build). This will put the frontend inside src/main/resources/static directory.
+2. use command "./mvnw clean package -DskipTests" inside project directory. This will create .jar file in /target directory.
+* I have set a DockerFile for you :). Just run the command (docker compose up --build -d)
+* check the url (http://localhost:8082/)

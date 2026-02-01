@@ -12,9 +12,9 @@ public class AuditorAwareImpl implements AuditorAware<String> {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            return Optional.of("SYSTEM"); // Eğer kimse login değilse (kayıt olma anı gibi)
+            return Optional.of("SYSTEM");
         }
 
-        return Optional.of(authentication.getName()); // Login olan kullanıcının username'ini döner
+        return Optional.of(authentication.getName());
     }
 }

@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.common.exception;
 
+import com.github.UsefulHands.reception.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,74 +16,79 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    // 1. Business Logic Error (400)
+    // 400 - Business Logic Error: Something went wrong with the process
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
         log.warn("Business Exception: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(400, "Bad Request", ex.getMessage()));
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 2. Conflict Error (409)
+    // 409 - Conflict Error: Resource already exists or state is not suitable
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleConflictException(ConflictException ex) {
         log.warn("Conflict Exception: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(409, "Conflict", ex.getMessage()));
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 3. User Not Found (404)
+    // 404 - Not Found: The user you are looking for is not in the database
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
         log.warn("User Not Found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(404, "Not Found", ex.getMessage()));
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 4. Username Already Exists (400)
+    // 404 - Not Found: The user you are looking for is not in the database
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(ResourceNotFoundException ex) {
+        log.warn("Resource Not Found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    // 400 - Duplicate Resource: This username is already taken by someone else
     @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameExists(UsernameAlreadyExistsException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleUsernameExists(UsernameAlreadyExistsException ex) {
         log.warn("Username Already Exists: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(400, "Bad Request", ex.getMessage()));
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 5. Wrong Password (401)
+    // 401 - Unauthorized: Wrong password or invalid credentials alert
     @ExceptionHandler(WrongPasswordException.class)
-    public ResponseEntity<ErrorResponse> handleWrongPassword(WrongPasswordException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleWrongPassword(WrongPasswordException ex) {
         log.warn("Security Alert - Wrong Password Attempt: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(401, "Unauthorized", ex.getMessage()));
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 6. Validation Errors (400)
+    // 400 - Validation Failed: Provided data did not meet the requirements
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage()));
 
         log.warn("Validation failed: {}", errors);
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.success(errors, "Validation failed"));
     }
 
-    // 7. General Runtime (400)
+    // 400 - Runtime Error: Unexpected runtime issue during execution
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex) {
         log.error("Runtime Exception caught: ", ex);
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 8. Unexpected System Errors (500)
+    // 500 - System Crash: Critical internal error, something is broken on our side
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex, HttpServletRequest request) {
         log.error("CRITICAL: Unexpected system error on URI: {} - Error: ", request.getRequestURI(), ex);
-
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "System Error",
-                "Something went wrong on our end."
-        );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Something went wrong on our end."));
     }
 }

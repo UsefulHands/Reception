@@ -144,6 +144,24 @@ Content-Type: application/json
 
 ###
 
+### 8. Register error (Empty password)
+# Validates that password cannot be blank (400 Bad Request)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "Something",
+  "password": ""
+}
+
+> {%
+    client.test("Fail due to empty password", function() {
+        client.assert(response.status === 400, "Validation should reject empty password");
+    });
+%}
+
+###
+
 ### 9. Login (Case Insensitive Username)
 POST http://localhost:8080/api/v1/user/login
 Content-Type: application/json

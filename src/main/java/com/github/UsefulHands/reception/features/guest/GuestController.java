@@ -1,8 +1,11 @@
 package com.github.UsefulHands.reception.features.guest;
 
+import com.github.UsefulHands.reception.common.response.ApiResponse;
+import com.github.UsefulHands.reception.features.receptionist.ReceptionistDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,13 +18,26 @@ public class GuestController {
     private final GuestService guestService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public GuestDto createGuest(@Valid @RequestBody GuestDto guestDto) {
-        return guestService.createGuest(guestDto);
+    public ResponseEntity<ApiResponse<GuestDto>> create(@Valid @RequestBody GuestRegistrationRequest request) {
+        GuestDto guestDto = guestService.registerGuest(
+                request.getGuestDetails(),
+                request.getUsername(),
+                request.getPassword()
+        );
+        return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest created"));
     }
 
     @GetMapping
-    public List<GuestDto> getAllGuests() {
-        return guestService.getAllGuests();
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
+    public ResponseEntity<ApiResponse<List<GuestDto>>> getGuests() {
+        List<GuestDto> guests = guestService.getAllGuests();
+        return ResponseEntity.ok(ApiResponse.success(guests, "Guests retrieved"));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN', 'RECEPTIONIST')")
+    public ResponseEntity<ApiResponse<GuestDto>> getGuest(@PathVariable Long id){
+        GuestDto guestDto = guestService.getGuest(id);
+        return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest retrieved"));
     }
 }
