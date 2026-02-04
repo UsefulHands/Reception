@@ -26,6 +26,9 @@ public class UserEntity extends BaseEntity implements UserDetails {
     private String password;
 
     @Column(nullable = false)
+    private boolean isDeleted;
+
+    @Column(nullable = false)
     private String role; // ROLE_ADMIN, ROLE_RECEPTIONIST, ROLE_GUEST
 
     @Override
@@ -40,5 +43,5 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() { return true; }
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return !this.isDeleted; }
 }

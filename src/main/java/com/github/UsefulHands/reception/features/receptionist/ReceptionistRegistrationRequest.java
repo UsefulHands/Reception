@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class ReceptionistRegistrationRequest {
     @Valid
-    private ReceptionistDto receptionistDto;
+    private ReceptionistDto receptionistDetails;
 
     @NotBlank
     private String username;

@@ -56,6 +56,7 @@ The Spring Boot backend serves the Angular frontend as static content.
 
 1. Navigate to: src/main/frontend
 2. Run: npm install
+3. Run npm install bootswatch
 3. Run: ng build --output-path=../resources/static --delete-output-path=false
 
 This process populates the src/main/resources/static folder with the necessary assets for the Spring Boot application.
@@ -118,7 +119,7 @@ Very important
 * Backend: Run the project and check url (http://localhost:8080/swagger-ui/index.html)
 
 ### 2.Docker-Container
-* If docker and npm install is ok,
+* If installations are ok,
 1. Open directory src/main/frontend and use command (npm run build). This will put the frontend inside src/main/resources/static directory.
 2. use command "./mvnw clean package -DskipTests" inside project directory. This will create .jar file in /target directory.
 * I have set a DockerFile for you :). Just run the command (docker compose up --build -d)

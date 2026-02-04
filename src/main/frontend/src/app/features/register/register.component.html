@@ -1,0 +1,49 @@
+<div class="container d-flex justify-content-center align-items-center min-vh-100 py-5">
+  <div class="card border-0 shadow-lg p-3 bg-white rounded" style="width: 32rem;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4 text-primary fw-bold">Guest Registration</h2>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">First Name</label>
+          <input #fname type="text" class="form-control" placeholder="John">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Last Name</label>
+          <input #lname type="text" class="form-control" placeholder="Doe">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Phone Number</label>
+        <input #phone type="text" class="form-control" placeholder="+90555...">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Identity Number</label>
+        <input #identity type="text" class="form-control" placeholder="ID Number">
+      </div>
+
+      <hr class="my-4">
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Username</label>
+        <input #user type="text" class="form-control" placeholder="Choose a username">
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Password</label>
+        <input #pass type="password" class="form-control" placeholder="••••••">
+      </div>
+
+      <button (click)="onRegister(user.value, pass.value, fname.value, lname.value, phone.value, identity.value)"
+              class="btn btn-primary btn-lg w-100 shadow-sm">
+        Create Account
+      </button>
+
+      <div class="mt-3 text-center">
+        <small class="text-muted">Security: JWT & Encryption Active</small>
+      </div>
+    </div>
+  </div>
+</div>

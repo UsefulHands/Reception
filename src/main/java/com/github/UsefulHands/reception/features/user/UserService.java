@@ -1,12 +1,11 @@
 package com.github.UsefulHands.reception.features.user;
 
-import com.github.UsefulHands.reception.common.audit.AuditLogService;
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
 import com.github.UsefulHands.reception.common.exception.UserNotFoundException;
 import com.github.UsefulHands.reception.common.exception.UsernameAlreadyExistsException;
 import com.github.UsefulHands.reception.common.exception.WrongPasswordException;
 import com.github.UsefulHands.reception.common.security.JwtService;
-import com.github.UsefulHands.reception.features.admin.AdminDto;
+import com.github.UsefulHands.reception.features.audit.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,31 +34,44 @@ public class UserService {
                     return new UserNotFoundException("User not found!");
                 });
 
+        if (userEntity.isDeleted()) {
+            log.warn("Login failed, {}, account is soft-deleted", request.getUsername());
+            throw new RuntimeException("Account is disabled or deleted!");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
             log.info("Login failed, {}, wrong password", request.getUsername());
             throw new WrongPasswordException("Invalid credentials!");
         }
+
         log.info("Login success, {}, user logged in", request.getUsername());
 
         return jwtService.generateToken(userEntity);
     }
 
     public UserEntity createAccount(String username, String password, String role) {
-        log.info("Creating new User: {}", username);
+        log.info("Creating or re-activating user: {}", username);
 
-        if (userRepository.existsByUsernameIgnoreCase(username)) {
-            throw new UsernameAlreadyExistsException("Username already exists!");
-        }
-
-        UserEntity userEntity = UserEntity.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .role(role)
-                .build();
-        UserEntity savedEntity = userRepository.save(userEntity);
-        log.info("User profile saved with ID: {}", userEntity.getId());
-
-        return savedEntity;
+        return userRepository.findByUsernameIgnoreCase(username)
+                .map(existingUser -> {
+                    if (!existingUser.isDeleted()) {
+                        throw new UsernameAlreadyExistsException("Username already exists and is active!");
+                    }
+                    log.info("Re-activating deleted user: {}", username);
+                    existingUser.setPassword(passwordEncoder.encode(password));
+                    existingUser.setRole(role);
+                    existingUser.setDeleted(false); // Tekrar aktif yapıyoruz
+                    return userRepository.save(existingUser);
+                })
+                .orElseGet(() -> {
+                    UserEntity newUser = UserEntity.builder()
+                            .username(username)
+                            .password(passwordEncoder.encode(password))
+                            .role(role)
+                            .isDeleted(false)
+                            .build();
+                    return userRepository.save(newUser);
+                });
     }
 
     public List<UserDto> getUsers() {

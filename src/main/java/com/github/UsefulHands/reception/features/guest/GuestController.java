@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,13 @@ public class GuestController {
         return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest created"));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
+    public ResponseEntity<ApiResponse<GuestDto>> editGuest(@PathVariable Long id, @Valid @RequestBody GuestDto guestDto){
+        GuestDto updatedGuest = guestService.editGuest(id, guestDto);
+        return ResponseEntity.ok(ApiResponse.success(updatedGuest, "Guest edited"));
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
     public ResponseEntity<ApiResponse<List<GuestDto>>> getGuests() {
@@ -35,9 +43,16 @@ public class GuestController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
     public ResponseEntity<ApiResponse<GuestDto>> getGuest(@PathVariable Long id){
         GuestDto guestDto = guestService.getGuest(id);
         return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest retrieved"));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
+    public ResponseEntity<ApiResponse<GuestDto>> deleteGuest(@PathVariable Long id){
+        GuestDto guestDto = guestService.deleteGuest(id);
+        return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest deleted"));
     }
 }

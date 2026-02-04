@@ -23,22 +23,46 @@ public class GuestService {
 
     @Transactional
     public GuestDto registerGuest(GuestDto guestDto, String username, String password) {
-        log.info("Registering new Guest: {}", guestDto.getFirstName());
+        log.info("Registering Guest: {} {}", guestDto.getFirstName(), guestDto.getLastName());
 
         UserEntity userEntity = userService.createAccount(username, password, "ROLE_GUEST");
-        GuestEntity guestEntity = guestMapper.toEntity(guestDto);
-        guestEntity.setUser(userEntity);
-        GuestEntity savedGuest = guestRepository.save(guestEntity);
-        log.info("Guest profile saved with ID: {} for User ID: {}", savedGuest.getId(), userEntity.getId());
 
-        guestDto.setId(savedGuest.getId());
-        guestDto.setUserId(userEntity.getId());
-        return guestMapper.toDto(savedGuest);
+        GuestEntity guestEntity = guestRepository.findByUserId(userEntity.getId())
+                .map(existingGuest -> {
+                    log.info("Found existing guest profile for user, updating info...");
+                    guestMapper.updateEntityFromDto(guestDto, existingGuest);
+                    return existingGuest;
+                })
+                .orElseGet(() -> {
+                    log.info("No existing guest found, creating new profile...");
+                    GuestEntity newGuest = guestMapper.toEntity(guestDto);
+                    newGuest.setUser(userEntity);
+                    return newGuest;
+                });
+
+        GuestEntity savedGuest = guestRepository.save(guestEntity);
+
+        GuestDto responseDto = guestMapper.toDto(savedGuest);
+        responseDto.setUserId(userEntity.getId());
+        return responseDto;
+    }
+
+    @Transactional
+    public GuestDto editGuest(Long id, GuestDto guestDto) {
+        log.info("Editing guest");
+
+        GuestEntity guestEntity = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + id));
+
+        guestMapper.updateEntityFromDto(guestDto, guestEntity);
+
+        GuestEntity updatedGuest = guestRepository.save(guestEntity);
+        return guestMapper.toDto(updatedGuest);
     }
 
     public List<GuestDto> getAllGuests() {
         log.info("Retrieving guests");
-        return guestRepository.findAll()
+        return guestRepository.findAllActiveGuests()
                 .stream()
                 .map(guestMapper::toDto)
                 .collect(Collectors.toList());
@@ -46,8 +70,23 @@ public class GuestService {
 
     public GuestDto getGuest(Long id){
         log.info("Retrieving guest");
-        return guestRepository.findByUserId(id)
+        return guestRepository.findById(id)
                 .map(guestMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + id));
+    }
+
+    @Transactional
+    public GuestDto deleteGuest(Long guestId) {
+        GuestEntity guest = guestRepository.findById(guestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
+
+        if (guest.getUser() != null) {
+            guest.getUser().setDeleted(true);
+        }
+
+        guestRepository.save(guest);
+
+        log.info("Guest and associated User marked as deleted for Guest ID: {}", guestId);
+        return guestMapper.toDto(guest);
     }
 }

@@ -21,4 +21,6 @@ public class UserDto {
     @NotBlank(message = "Password cannot be empty")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    private boolean isDeleted = false;
 }

@@ -9,4 +9,5 @@ import java.util.List;
 public interface ReceptionistRepository extends JpaRepository<ReceptionistEntity, Long> {
 
     Optional<ReceptionistEntity> findByUserId(Long id);
+    Optional<ReceptionistEntity> findById(Long id);
 }
