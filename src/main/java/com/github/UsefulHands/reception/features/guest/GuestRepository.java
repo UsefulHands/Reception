@@ -9,8 +9,8 @@ import java.util.List;
 @Repository
 public interface GuestRepository extends JpaRepository<GuestEntity, Long> {
 
-    Optional<GuestEntity> findById(Long Id);
-    Optional<GuestEntity> findByUserId(Long Id);
+    Optional<GuestEntity> findById(Long id);
+    Optional<GuestEntity> findByUserId(Long id);
     @Query("SELECT g FROM GuestEntity g JOIN g.user u WHERE u.isDeleted = false")
     List<GuestEntity> findAllActiveGuests();
 }

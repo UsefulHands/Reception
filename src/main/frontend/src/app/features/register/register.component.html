@@ -1,48 +1,75 @@
-<div class="container d-flex justify-content-center align-items-center min-vh-100 py-5">
-  <div class="card border-0 shadow-lg p-3 bg-white rounded" style="width: 32rem;">
-    <div class="card-body">
-      <h2 class="card-title text-center mb-4 text-primary fw-bold">Guest Registration</h2>
+<div class="register-wrapper d-flex justify-content-center align-items-center min-vh-100 py-5">
+  <div class="bg-shape-1"></div>
+  <div class="bg-shape-2"></div>
 
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">First Name</label>
-          <input #fname type="text" class="form-control" placeholder="John">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden register-card animate-fade-up" style="width: 35rem;">
+    <div class="register-accent bg-primary"></div>
+
+    <div class="card-body p-5 bg-white">
+      <div class="text-center mb-4">
+        <div class="register-icon mb-3 bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center">
+          <i class="bi bi-person-plus-fill fs-2"></i>
         </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label fw-semibold">Last Name</label>
-          <input #lname type="text" class="form-control" placeholder="Doe">
+        <h2 class="fw-bold text-dark mb-1">Guest Registration</h2>
+        <p class="text-muted small">Join us for an exclusive stay experience</p>
+      </div>
+
+      <div class="section-divider mb-4">
+        <span class="bg-white px-3 text-primary fw-bold small uppercase">Personal Information</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <input #fname type="text" class="form-control border-light-subtle bg-light" id="fnInput" placeholder="John">
+            <label for="fnInput">First Name</label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <input #lname type="text" class="form-control border-light-subtle bg-light" id="lnInput" placeholder="Doe">
+            <label for="lnInput">Last Name</label>
+          </div>
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Phone Number</label>
-        <input #phone type="text" class="form-control" placeholder="+90555...">
+      <div class="form-floating mb-3">
+        <input #phone type="text" class="form-control border-light-subtle bg-light" id="phoneInput" placeholder="Phone">
+        <label for="phoneInput"><i class="bi bi-telephone me-2"></i>Phone Number</label>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Identity Number</label>
-        <input #identity type="text" class="form-control" placeholder="ID Number">
+      <div class="form-floating mb-4">
+        <input #identity type="text" class="form-control border-light-subtle bg-light" id="idInput" placeholder="ID Number">
+        <label for="idInput"><i class="bi bi-card-heading me-2"></i>Identity Number</label>
       </div>
 
-      <hr class="my-4">
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Username</label>
-        <input #user type="text" class="form-control" placeholder="Choose a username">
+      <div class="section-divider mb-4">
+        <span class="bg-white px-3 text-primary fw-bold small uppercase">Account Security</span>
       </div>
 
-      <div class="mb-4">
-        <label class="form-label fw-semibold">Password</label>
-        <input #pass type="password" class="form-control" placeholder="••••••">
+      <div class="form-floating mb-3">
+        <input #user type="text" class="form-control border-light-subtle bg-light" id="userInput" placeholder="Username">
+        <label for="userInput"><i class="bi bi-person-circle me-2"></i>Choose Username</label>
+      </div>
+
+      <div class="form-floating mb-4">
+        <input #pass type="password" class="form-control border-light-subtle bg-light" id="passInput" placeholder="Password">
+        <label for="passInput"><i class="bi bi-shield-lock me-2"></i>Set Password</label>
       </div>
 
       <button (click)="onRegister(user.value, pass.value, fname.value, lname.value, phone.value, identity.value)"
-              class="btn btn-primary btn-lg w-100 shadow-sm">
-        Create Account
+              class="btn btn-primary btn-lg w-100 shadow-sm rounded-3 fw-bold py-3 mb-3">
+        CREATE MY ACCOUNT
       </button>
 
-      <div class="mt-3 text-center">
-        <small class="text-muted">Security: JWT & Encryption Active</small>
+      <p class="text-center small text-muted">
+        Already have an account? <a routerLink="/login" class="text-primary fw-bold text-decoration-none">Sign In</a>
+      </p>
+
+      <div class="text-center mt-4 border-top pt-3">
+        <small class="text-muted d-flex align-items-center justify-content-center gap-1">
+          <i class="bi bi-patch-check-fill text-success"></i> Secured by JWT & AES-256
+        </small>
       </div>
     </div>
   </div>

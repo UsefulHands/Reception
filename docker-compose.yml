@@ -17,6 +17,14 @@ services:
     volumes:
       - ./logs:/app/logs
 
+  frontend:
+    build: ./src/main/frontend
+    container_name: reception_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - app
+
   db:
     image: postgres:15
     container_name: reception_postgres

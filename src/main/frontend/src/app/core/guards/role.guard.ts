@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service'; // AuthService yolun
+import { AuthService } from '../services/auth.service';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -10,10 +10,9 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const userRole = authService.getUserRole();
 
   if (expectedRoles.includes(userRole)) {
-    return true; // Yetki var, geçebilir
+    return true;
   }
 
-  // Yetkisi yoksa ana sayfaya veya login'e şutla
   router.navigate(['/home']);
   return false;
 };

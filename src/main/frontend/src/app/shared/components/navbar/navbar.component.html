@@ -1,43 +1,66 @@
-<nav class="navbar navbar-expand-lg bg-white sticky-top border-bottom shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white sticky-top border-bottom py-3 main-nav">
   <div class="container">
-    <a class="navbar-brand fw-bold text-primary" routerLink="/">HOTEL OS</a>
+    <a class="navbar-brand d-flex align-items-center" routerLink="/">
+      <div class="brand-box bg-primary text-white me-2 d-flex align-items-center justify-content-center">
+        <span class="fw-bold">H</span>
+      </div>
+      <span class="fw-bold tracking-tighter text-dark mb-0">HOTEL<span class="text-primary text-logo-os">OS</span></span>
+    </a>
 
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" routerLink="/home">Home</a></li>
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <i class="bi bi-list fs-2"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+          <a class="nav-link px-3" routerLink="/home" routerLinkActive="active-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3" routerLink="/rooms" routerLinkActive="active-link">Rooms</a>
+        </li>
 
         @if (currentRole === 'GUEST') {
           <li class="nav-item">
-            <a class="nav-link" routerLink="/my-reservations">My Stays</a>
+            <a class="nav-link px-3" routerLink="/my-profile" routerLinkActive="active-link">My Reservations</a>
           </li>
         }
 
         @if (currentRole === 'ADMIN' || currentRole === 'RECEPTIONIST') {
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/guests">Guest Management</a>
-          </li>
-        }
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-3" href="#" role="button" data-bs-toggle="dropdown">
+              Management
+            </a>
+            <ul class="dropdown-menu border-0 shadow-lg rounded-3 animate-slide-in">
+              <li><a class="dropdown-item py-2" routerLink="/guests"><i class="bi bi-people me-2"></i>Guest Management</a></li>
 
-        @if (currentRole === 'ADMIN') {
-          <li class="nav-item">
-            <a class="nav-link text-danger fw-bold" routerLink="/audit-logs">Audit Logs</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/users">System Users</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/receptionists">Receptionist Management</a>
+              @if (currentRole === 'ADMIN') {
+                <li><hr class="dropdown-divider opacity-50"></li>
+                <li><h6 class="dropdown-header small text-uppercase opacity-50">Admin Only</h6></li>
+                <li><a class="dropdown-item py-2" routerLink="/receptionists"><i class="bi bi-person-badge me-2"></i>Receptionists</a></li>
+                <li><a class="dropdown-item py-2" routerLink="/admins"><i class="bi bi-shield-check me-2"></i>Administrators</a></li>
+                <li><a class="dropdown-item py-2 text-danger fw-bold" routerLink="/audit-logs"><i class="bi bi-journal-text me-2"></i>Audit Logs</a></li>
+              }
+            </ul>
           </li>
         }
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-3">
         @if (currentRole === 'ANONYMOUS') {
-          <a routerLink="/login" class="btn btn-outline-primary btn-sm px-3">Login</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm px-3">Register</a>
+          <a routerLink="/login" class="btn btn-link text-dark text-decoration-none fw-bold small">Sign In</a>
+          <a routerLink="/register" class="btn btn-primary rounded-pill px-4 shadow-sm btn-sm fw-bold">REGISTER</a>
         } @else {
-          <span class="me-3 small text-muted">Signed in as: <b>{{currentRole}}</b></span>
-          <button class="btn btn-sm btn-outline-danger px-3" (click)="logout()" ...>Logout</button>
+          <div class="d-flex align-items-center border-start ps-3 ms-2">
+            <div class="user-info me-3 text-end d-none d-sm-block">
+              <div class="small fw-bold text-dark lh-1">{{ currentRole }}</div>
+              <small class="text-muted extra-small">Connected</small>
+            </div>
+            <button class="btn btn-outline-danger btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center"
+                    (click)="logout()" title="Logout" style="width: 35px; height: 35px;">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
         }
       </div>
     </div>

@@ -4,17 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { GuestModel} from '../../core/models/guest/GuestModel';
 import {GuestRegistrationRequest} from '../../core/models/guest/GuestRegisterationRequest';
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './guest.component.html'
+  templateUrl: './guest.component.html',
+  styleUrls: ['./guest.component.css']
 })
 export class GuestComponent implements OnInit {
   guests: GuestModel[] = [];
   isEditMode = false;
-  private readonly API_URL = 'http://localhost:8080/api/v1/guests';
+  private readonly API_URL = `${environment.apiUrl}/guests`;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -38,9 +40,7 @@ export class GuestComponent implements OnInit {
   loadGuests() {
     this.http.get<any>(this.API_URL).subscribe({
       next: (res) => {
-        // Yeni bir dizi referansı oluşturarak Angular'ı uyar
         this.guests = res.data ? [...res.data] : [];
-        // Görünümü zorla güncelle
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Loading error:', err)
@@ -57,15 +57,16 @@ export class GuestComponent implements OnInit {
         identityNumber: this.selectedGuest.identityNumber
       };
 
-      this.http.put<any>(`${this.API_URL}/${this.selectedGuest.id}`, updatePayload).subscribe({
-        next: (res) => {
-          console.log('Update successful:', res.message);
-          this.resetForm();
-          this.loadGuests();
-        },
-        error: (err) => console.error('Update error:', err)
-      });
-
+      if(confirm("Are you sure you want to update this guest?")) {
+        this.http.put<any>(`${this.API_URL}/${this.selectedGuest.id}`, updatePayload).subscribe({
+          next: (res) => {
+            console.log('Update successful:', res.message);
+            this.resetForm();
+            this.loadGuests();
+          },
+          error: (err) => console.error('Update error:', err)
+        });
+      }
     } else {
       // CREATE (POST)
       const registrationPayload: GuestRegistrationRequest = {
@@ -79,14 +80,16 @@ export class GuestComponent implements OnInit {
         password: this.selectedGuest.password || ''
       };
 
-      this.http.post<any>(this.API_URL, registrationPayload).subscribe({
-        next: (res) => {
-          console.log('Registration successful:', res.message);
-          this.loadGuests();
-          this.resetForm();
-        },
-        error: (err) => console.error('Save error:', err)
-      });
+      if(confirm("Are you sure you want to register this guest?")) {
+        this.http.post<any>(this.API_URL, registrationPayload).subscribe({
+          next: (res) => {
+            console.log('Registration successful:', res.message);
+            this.loadGuests();
+            this.resetForm();
+          },
+          error: (err) => console.error('Save error:', err)
+        });
+      }
     }
   }
 
@@ -96,7 +99,7 @@ export class GuestComponent implements OnInit {
   }
 
   deleteGuest(id: number) {
-    if (confirm('Are you sure?')) {
+    if (confirm('Are you sure you want to delete this guest?')) {
       this.http.delete(`${this.API_URL}/${id}`).subscribe(() => this.loadGuests());
     }
   }

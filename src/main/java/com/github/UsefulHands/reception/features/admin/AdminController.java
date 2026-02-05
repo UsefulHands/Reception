@@ -28,6 +28,13 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(adminDto, "Admin created"));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminDto>> editAdmin(@PathVariable Long id, @Valid @RequestBody AdminDto adminDto){
+        AdminDto updatedAdmin = adminService.editAdmin(id, adminDto);
+        return ResponseEntity.ok(ApiResponse.success(updatedAdmin, "Admin edited"));
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<AdminDto>>> getAdmins() {
@@ -40,5 +47,12 @@ public class AdminController {
     public ResponseEntity<ApiResponse<AdminDto>> getAdmin(@PathVariable Long id){
         AdminDto adminDto = adminService.getAdmin(id);
         return ResponseEntity.ok(ApiResponse.success(adminDto, "Admin retrieved"));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminDto>> deleteAdmin(@PathVariable Long id){
+        AdminDto adminDto = adminService.deleteAdmin(id);
+        return ResponseEntity.ok(ApiResponse.success(adminDto, "Admin deleted"));
     }
 }

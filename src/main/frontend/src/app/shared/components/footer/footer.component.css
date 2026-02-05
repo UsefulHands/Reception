@@ -1,0 +1,23 @@
+.footer {
+  /* Sayfa içeriği az olsa bile footer'ı en alta yapıştırır */
+  border-top: 1px solid #eee !important;
+}
+
+.extra-small {
+  font-size: 0.75rem; /* Yazıları küçülttük */
+}
+
+.tracking-widest {
+  letter-spacing: 1.5px;
+}
+
+/* Mobilde üst üste binmesin diye */
+@media (max-width: 768px) {
+  .footer .row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .footer div {
+    text-align: center !important;
+  }
+}

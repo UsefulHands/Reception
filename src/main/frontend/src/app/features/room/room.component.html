@@ -1,0 +1,265 @@
+<div class="container-fluid py-4 bg-secondary-subtle min-vh-100">
+  <div class="container">
+    <div class="row g-4">
+
+      @if (canModify) {
+        <div class="col-lg-4">
+          <div class="card border border-2 border-dark-subtle shadow rounded-3 sticky-top" style="top: 20px; z-index: 1000;">
+            <div class="card-header bg-primary text-white py-3 border-bottom border-2">
+              <h6 class="mb-0 fw-bold text-uppercase">
+                <i class="bi bi-plus-circle-fill me-2"></i>
+                {{ isEditMode ? 'Edit Room: ' + selectedRoom.roomNumber : 'Add New Room' }}
+              </h6>
+            </div>
+            <div class="card-body p-4 bg-white" style="max-height: 80vh; overflow-y: auto;">
+              <form (ngSubmit)="saveRoom()" #roomForm="ngForm">
+
+                <div class="row g-3">
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">Room No</label>
+                    <input type="text" class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.roomNumber" name="roomNumber" required placeholder="e.g. 101">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">Price ($)</label>
+                    <input type="number" class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.price" name="price" required min="1">
+                  </div>
+
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">Room Type</label>
+                    <select class="form-select border-secondary shadow-sm" [(ngModel)]="selectedRoom.type" name="type" required>
+                      @for (t of roomTypes; track t) {
+                        <option [value]="t">{{ t }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">View</label>
+                    <select class="form-select border-secondary shadow-sm" [(ngModel)]="selectedRoom.view" name="view">
+                      @for (v of viewTypes; track v) {
+                        <option [value]="v">{{ v }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">Bed Count</label>
+                    <input type="number" class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.beds" name="beds" required min="1">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small fw-bold text-dark">Max Guests</label>
+                    <input type="number" class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.maxGuests" name="maxGuests" required min="1">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-dark">Floor</label>
+                    <input type="number" class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.floor" name="floor">
+                  </div>
+
+                  <div class="col-6">
+                    <div class="form-check form-switch border rounded p-2 ps-5 bg-light shadow-sm">
+                      <input class="form-check-input" type="checkbox" id="availSw" [(ngModel)]="selectedRoom.available" name="available">
+                      <label class="form-check-label small fw-bold" for="availSw">Available</label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="form-check form-switch border rounded p-2 ps-5 bg-light shadow-sm">
+                      <input class="form-check-input" type="checkbox" id="smokeSw" [(ngModel)]="selectedRoom.smokingAllowed" name="smokingAllowed">
+                      <label class="form-check-label small fw-bold" for="smokeSw">Smoking</label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-primary text-uppercase">Bed Types</label>
+                    <div class="d-flex flex-wrap gap-2 p-2 border rounded bg-light shadow-sm">
+                      @for (bt of bedTypeOptions; track bt) {
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" [id]="'bed'+bt"
+                                 [checked]="selectedRoom.bedTypes.includes(bt)"
+                                 (change)="toggleBedType(bt)">
+                          <label class="form-check-label small" [for]="'bed'+bt">{{bt}}</label>
+                        </div>
+                      }
+                    </div>
+                    @if (selectedRoom.bedTypes.length === 0) {
+                      <div class="form-text text-danger small">At least one bed type is required!</div>
+                    }
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-primary text-uppercase">Amenities</label>
+                    <div class="row g-1 p-2 border rounded bg-light shadow-sm mx-0" style="max-height: 100px; overflow-y: auto;">
+                      @for (am of amenitiesList; track am) {
+                        <div class="col-6">
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" [id]="am"
+                                   [checked]="selectedRoom.amenities.includes(am)"
+                                   (change)="toggleSelection(selectedRoom.amenities, am)">
+                            <label class="form-check-label small" [for]="am">{{ am.replace('_',' ') }}</label>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-dark">Description</label>
+                    <textarea class="form-control border-secondary shadow-sm" [(ngModel)]="selectedRoom.description" name="description" rows="2"></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-dark">Image URLs (comma separated)</label>
+                    <textarea class="form-control border-secondary shadow-sm" rows="2"
+                              [ngModel]="selectedRoom.images.join(', ')" (ngModelChange)="updateImages($event)" name="imgs"></textarea>
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                  <button type="submit" class="btn btn-primary fw-bold shadow" [disabled]="!roomForm.valid || selectedRoom.bedTypes.length === 0">
+                    {{ isEditMode ? 'UPDATE ROOM' : 'SAVE ROOM' }}
+                  </button>
+
+                  @if (isEditMode) {
+                    <button type="button" class="btn btn-outline-dark btn-sm fw-bold" (click)="resetForm()">
+                      CANCEL
+                    </button>
+                  }
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div [class]="canModify ? 'col-lg-8' : 'col-lg-12'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="fw-bold text-dark mb-0">EXPLORE ROOMS</h4>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm shadow-sm" [class]="showAvailableOnly ? 'btn-success' : 'btn-outline-success'" (click)="toggleAvailableFilter()">
+              {{ showAvailableOnly ? 'Only Available' : 'Show All' }}
+            </button>
+            <button class="btn btn-sm btn-dark shadow-sm" (click)="loadRooms()"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          @for (room of rooms; track room.id) {
+            <div class="col">
+              <div class="card h-100 border-0 shadow-sm hover-card rounded-4 overflow-hidden position-relative border border-2 border-transparent">
+                <span class="badge position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm"
+                      [class]="room.available ? 'bg-success' : 'bg-danger'">
+                  {{ room.available ? 'Available' : 'Occupied' }}
+                </span>
+
+                <img [src]="room.images[0] || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800'"
+                     class="card-img-top" style="height: 200px; object-fit: cover; cursor: pointer;" (click)="viewDetails(room)">
+
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <h5 class="fw-bold mb-0">Room {{ room.roomNumber }}</h5>
+                      <small class="text-primary fw-bold text-uppercase">{{ room.type }}</small>
+                    </div>
+                    <div class="text-end">
+                      <span class="h5 fw-bold text-dark mb-0">${{ room.price }}</span>
+                      <small class="d-block text-muted">per night</small>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-3 my-3 text-muted small border-top pt-3">
+                    <span><i class="bi bi-people-fill me-1"></i>{{ room.maxGuests }} Guest</span>
+                    <span><i class="bi bi-aspect-ratio me-1"></i>{{ room.areaSqm }} m²</span>
+                    <span><i class="bi bi-layers-fill me-1"></i>Floor {{ room.floor }}</span>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-pill" (click)="viewDetails(room)">VIEW DETAILS</button>
+
+                    @if (isAdmin) {
+                      <button class="btn btn-outline-danger btn-sm px-3 rounded-pill shadow-sm" (click)="deleteRoom(room.id!)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+
+                    @if (canModify) {
+                      <button class="btn btn-outline-info btn-sm px-3 rounded-pill shadow-sm" (click)="editRoom(room)">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-search display-1 text-muted"></i>
+              <h4 class="mt-3 text-muted">No rooms found.</h4>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="roomDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+      @if (detailRoom) {
+        <div class="modal-header bg-dark text-white border-0 py-3">
+          <h5 class="modal-title fw-bold">ROOM {{ detailRoom.roomNumber }} DETAILS</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-0">
+          <div class="row g-0">
+            <div class="col-md-6">
+              <img [src]="detailRoom.images[0] || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800'"
+                   class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 300px;">
+            </div>
+
+            <div class="col-md-6 p-4 bg-white">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="fw-bold text-primary mb-0">{{ detailRoom.type }}</h4>
+                <span class="badge" [class]="detailRoom.available ? 'bg-success' : 'bg-danger'">
+                  {{ detailRoom.available ? 'Available' : 'Occupied' }}
+                </span>
+              </div>
+
+              <p class="text-muted small mb-4">{{ detailRoom.description || 'No description provided.' }}</p>
+
+              <div class="row g-3 mb-4">
+                <div class="col-6 small"><strong>View:</strong> {{ detailRoom.view }}</div>
+                <div class="col-6 small"><strong>Floor:</strong> {{ detailRoom.floor }}</div>
+                <div class="col-6 small"><strong>Beds:</strong> {{ detailRoom.beds }}</div>
+                <div class="col-6 small"><strong>Area:</strong> {{ detailRoom.areaSqm }} m²</div>
+                <div class="col-6 small"><strong>Bed Types:</strong> {{ detailRoom.bedTypes.join(', ') }}</div>
+              </div>
+
+              <h6 class="fw-bold small text-uppercase text-secondary border-bottom pb-2 mb-3">Amenities</h6>
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                @for (am of detailRoom.amenities; track am) {
+                  <span class="badge bg-light text-dark border p-2">
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>{{ am.replace('_',' ') }}
+                  </span>
+                } @empty {
+                  <span class="text-muted small italic">No amenities.</span>
+                }
+              </div>
+
+              <div class="mt-auto pt-3 d-flex justify-content-between align-items-center border-top">
+                <h3 class="fw-bold text-dark mb-0">${{ detailRoom.price }}<span class="small text-muted fw-normal fs-6"> / Night</span></h3>
+                <button class="btn btn-primary fw-bold px-4 rounded-pill shadow" [disabled]="!detailRoom.available">
+                  RESERVE NOW
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="p-5 text-center">Loading...</div>
+      }
+
+    </div>
+  </div>
+</div>

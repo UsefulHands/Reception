@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+.serif-font, .luxury-title {
+  font-family: 'Playfair Display', serif;
+}
+
+.hero-section {
+  height: 90vh;
+  position: relative;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  transition: transform 10s ease-out;
+  z-index: 1;
+}
+
+.hero-section:hover .hero-bg {
+  transform: scale(1.1); /* Hafif yakınlaşma efekti */
+}
+
+/* Luxury Buttons */
+.btn-luxury-outline {
+  border: 1px solid rgba(255,255,255,0.5);
+  color: white;
+  transition: all 0.4s;
+}
+
+.btn-luxury-outline:hover {
+  background: white;
+  color: black;
+  border-color: white;
+}
+
+.btn-luxury-white {
+  background: white;
+  color: black;
+  border: 1px solid white;
+  transition: all 0.4s;
+}
+
+.btn-luxury-white:hover {
+  background: transparent;
+  color: white;
+}
+
+/* Mouse Scroll Animation */
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.mouse {
+  width: 25px;
+  height: 40px;
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 20px;
+  position: relative;
+}
+
+.mouse::before {
+  content: "";
+  width: 4px; height: 8px;
+  background: white;
+  position: absolute;
+  left: 50%; top: 8px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  animation: mouse-scroll 2s infinite;
+}
+
+@keyframes mouse-scroll {
+  0% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 15px); }
+}
+
+/* Image Stack Effects */
+.img-reveal {
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.img-reveal:hover {
+  transform: translateY(-10px);
+  filter: brightness(1.1);
+}
+
+.image-decoration {
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 100px; height: 100px;
+  border-top: 2px solid #0d6efd;
+  border-right: 2px solid #0d6efd;
+  z-index: -1;
+}

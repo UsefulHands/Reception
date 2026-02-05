@@ -63,7 +63,7 @@ public class ReceptionistService {
 
     public List<ReceptionistDto> getAllReceptionists() {
         log.info("Retrieving receptionists");
-        return receptionistRepository.findAll()
+        return receptionistRepository.findAllActiveReceptionists()
                 .stream()
                 .map(receptionistMapper::toDto)
                 .collect(Collectors.toList());

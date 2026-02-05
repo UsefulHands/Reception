@@ -15,7 +15,7 @@ CREATE TABLE admins (
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     corporate_email VARCHAR(255) NOT NULL,
-    admin_tittle VARCHAR(50),
+    admin_title VARCHAR(50),
     user_id BIGINT NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255),
@@ -60,9 +60,61 @@ CREATE TABLE audit_logs (
     details VARCHAR(255)
 );
 
+CREATE TABLE rooms (
+                       id BIGSERIAL PRIMARY KEY,
+                       room_number VARCHAR(20) NOT NULL UNIQUE,
+                       type VARCHAR(50) NOT NULL,    -- SINGLE, DOUBLE, FAMILY, DELUXE
+                       view VARCHAR(50),             -- CITY, OCEAN, GARDEN, MOUNTAIN, POOL, NONE
+                       beds INT NOT NULL,
+                       max_guests INT NOT NULL,
+                       area_sqm DOUBLE PRECISION,
+                       description TEXT NOT NULL,
+                       price DECIMAL(19, 2) NOT NULL,
+                       available BOOLEAN NOT NULL DEFAULT TRUE,
+                       smoking_allowed BOOLEAN NOT NULL DEFAULT FALSE,
+                       floor INT NOT NULL,
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP,
+                       created_by VARCHAR(100),
+                       updated_by VARCHAR(100)
+);
+
+CREATE TABLE room_bed_types (
+                                room_id BIGINT NOT NULL,
+                                bed_type VARCHAR(50) NOT NULL, -- DOUBLE, QUEEN, KING
+                                CONSTRAINT fk_room_bed FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+CREATE TABLE room_amenities (
+                                room_id BIGINT NOT NULL,
+                                amenity VARCHAR(100) NOT NULL, -- WIFI, TV, MINIBAR, vs.
+                                CONSTRAINT fk_room_amenity FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+CREATE TABLE room_images (
+                             room_id BIGINT NOT NULL,
+                             image_url VARCHAR(255) NOT NULL,
+                             CONSTRAINT fk_room_image FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+INSERT INTO rooms (room_number, type, beds, max_guests, area_sqm, view, description, price, available, smoking_allowed, floor, created_by)
+VALUES ('101', 'SINGLE', 1, 1, 18.0, 'GARDEN', 'Cozy single room with garden view', 85.00, TRUE, FALSE, 1, 'SYSTEM');
+
+INSERT INTO room_bed_types (room_id, bed_type) VALUES (1, 'QUEEN');
+INSERT INTO room_amenities (room_id, amenity) VALUES (1, 'WIFI'), (1, 'TV'), (1, 'SAFE');
+INSERT INTO room_images (room_id, image_url) VALUES (1, 'https://hotel.com/img/101.jpg');
+
+
+INSERT INTO rooms (room_number, type, beds, max_guests, area_sqm, view, description, price, available, smoking_allowed, floor, created_by)
+VALUES ('304', 'DELUXE', 2, 4, 45.0, 'CITY', 'Large deluxe room for families', 250.00, TRUE, TRUE, 3, 'SYSTEM');
+
+INSERT INTO room_bed_types (room_id, bed_type) VALUES (2, 'KING'), (2, 'KING');
+INSERT INTO room_amenities (room_id, amenity) VALUES (2, 'WIFI'), (2, 'COFFEE_MACHINE'), (2, 'MINIBAR'), (2, 'BALCONY');
+INSERT INTO room_images (room_id, image_url) VALUES (2, 'https://hotel.com/img/304-1.jpg'), (2, 'https://hotel.com/img/304-2.jpg');
+
 -- pass: 'admin123'
 INSERT INTO users (username, password, role, created_at, created_by)
 VALUES ('admin', '$2a$10$hkgemn3l2/eMQIVynLaghuSGszNDwkeGX2FLzN23QMCTUMO1Uiw7a', 'ROLE_ADMIN', CURRENT_TIMESTAMP, 'SYSTEM');
 
-INSERT INTO admins (first_name, last_name, corporate_email, admin_tittle, user_id, created_at, created_by)
+INSERT INTO admins (first_name, last_name, corporate_email, admin_title, user_id, created_at, created_by)
 VALUES ('Cemaleddin', 'Seyhan', 'admin@otel.com', 'SUPER_ADMIN', 1, CURRENT_TIMESTAMP, 'SYSTEM');

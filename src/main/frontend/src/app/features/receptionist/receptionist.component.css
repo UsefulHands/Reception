@@ -1,0 +1,15 @@
+.hover-row {
+  transition: all 0.2s ease;
+}
+.hover-row:hover {
+  background-color: #f8f9fa;
+  transform: translateX(4px);
+}
+.section-title small {
+  letter-spacing: 1px;
+}
+.avatar-sm {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}

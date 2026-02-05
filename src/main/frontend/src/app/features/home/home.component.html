@@ -1,46 +1,64 @@
 <div class="main-content">
-  <section class="position-relative d-flex align-items-center justify-content-center text-white"
-           style="min-height: 80vh; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;">
+  <section class="hero-section position-relative d-flex align-items-center justify-content-center text-white overflow-hidden">
+    <div class="hero-bg" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;"></div>
 
-    <div class="container text-center">
-      <h6 class="text-uppercase ls-2 mb-3" style="letter-spacing: 3px;">Welcome to Excellence</h6>
-      <h1 class="display-2 fw-light serif-font mb-4">A Haven of Luxury & Comfort</h1>
-      <p class="lead mb-5 mx-auto" style="max-width: 600px;">
-        Located in the heart of the city, every detail is meticulously designed for your ultimate stay experience.
+    <div class="container text-center position-relative z-2 animate-fade-up">
+      <span class="text-uppercase ls-3 mb-3 d-block small fw-bold tracking-widest text-white-50">Discover Your Private Paradise</span>
+      <h1 class="display-1 fw-light mb-4 luxury-title">A Haven of <br><span class="fw-bold">Luxury & Comfort</span></h1>
+      <p class="lead mb-5 mx-auto opacity-75" style="max-width: 650px; font-weight: 300;">
+        Experience the perfect blend of modern elegance and timeless hospitality in the heart of the metropolitan pulse.
       </p>
-      <div class="d-flex justify-content-center gap-3">
-        <button class="btn btn-outline-light px-4 py-2 rounded-0 text-uppercase small">Explore Our Rooms</button>
-        <a routerLink="/login" class="btn btn-light px-4 py-2 rounded-0 text-uppercase small fw-bold">Staff Portal</a>
+      <div class="d-flex justify-content-center gap-4">
+        <button routerLink="/rooms" class="btn btn-luxury-outline px-5 py-3 rounded-0 text-uppercase small">Explore Suites</button>
+        <a routerLink="/login" class="btn btn-luxury-white px-5 py-3 rounded-0 text-uppercase small fw-bold">Explore Amenities</a>
       </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="mouse"></div>
     </div>
   </section>
 
-  <div class="container py-5">
+  <div class="container py-5 mt-lg-5">
     <div class="row align-items-center py-5">
-      <div class="col-lg-6 mb-4 mb-lg-0">
-        <h2 class="display-5 mb-4" style="font-family: serif;">An Unforgettable Stay</h2>
-        <p class="text-muted">
-          Where modern architecture meets traditional hospitality, every moment becomes a story. From our gourmet restaurants to our rejuvenating spa centers, we strive for perfection in every detail.
+      <div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5 animate-fade-in">
+        <h6 class="text-primary text-uppercase fw-bold mb-3 small tracking-widest">Our Story</h6>
+        <h2 class="display-4 mb-4 serif-font fw-normal">An Unforgettable <br>Stay Awaits</h2>
+        <p class="text-muted fs-5 lh-lg mb-4" style="font-weight: 300;">
+          Where modern architecture meets traditional hospitality, every moment becomes a story. Our sanctuary is designed for those who seek the extraordinary in every detail.
         </p>
-        <div class="row mt-4">
-          <div class="col-6 mb-3">
-            <h5 class="mb-1"><i class="bi bi-wifi me-2"></i> Complimentary Wi-Fi</h5>
-            <p class="small text-muted">High-speed access in all areas.</p>
+
+        <div class="row mt-5 g-4">
+          <div class="col-6">
+            <div class="feature-item">
+              <i class="bi bi-wifi fs-3 text-primary mb-2 d-block"></i>
+              <h6 class="fw-bold mb-1">Fiber Connectivity</h6>
+              <p class="small text-muted mb-0">Ultra high-speed access.</p>
+            </div>
           </div>
-          <div class="col-6 mb-3">
-            <h5 class="mb-1"><i class="bi bi-cup-hot me-2"></i> Gourmet Breakfast</h5>
-            <p class="small text-muted">Fresh and organic every morning.</p>
+          <div class="col-6">
+            <div class="feature-item">
+              <i class="bi bi-cup-hot fs-3 text-primary mb-2 d-block"></i>
+              <h6 class="fw-bold mb-1">Artisan Breakfast</h6>
+              <p class="small text-muted mb-0">Organic & Chef-curated.</p>
+            </div>
           </div>
         </div>
       </div>
+
       <div class="col-lg-6 ps-lg-5">
-        <div class="row g-2">
-          <div class="col-6 mt-4">
-            <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1000&auto=format&fit=crop" class="img-fluid rounded shadow-sm" alt="Hotel Interior">
+        <div class="image-stack position-relative">
+          <div class="row g-3">
+            <div class="col-6 pt-5">
+              <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1000&auto=format&fit=crop"
+                   class="img-fluid rounded-0 shadow-lg img-reveal" alt="Hotel Interior">
+            </div>
+            <div class="col-6">
+              <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop"
+                   class="img-fluid rounded-0 shadow-lg img-reveal" alt="Hotel Suite">
+            </div>
           </div>
-          <div class="col-6">
-            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop" class="img-fluid rounded shadow-sm" alt="Hotel Suite">
-          </div>
+          <div class="image-decoration d-none d-md-block"></div>
         </div>
       </div>
     </div>

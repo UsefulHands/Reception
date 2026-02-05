@@ -1,0 +1,29 @@
+.extra-small {
+  font-size: 0.75rem;
+}
+
+.log-row {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.log-row:hover {
+  background-color: #fbfbfb;
+  border-left: 3px solid #0d6efd;
+}
+
+/* Yanıp sönen yeşil nokta efekti */
+.pulse-success {
+  width: 8px;
+  height: 8px;
+  background-color: #198754;
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(25, 135, 84, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}

@@ -1,95 +1,79 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
-import { Observable, BehaviorSubject } from 'rxjs'; // 1. Bunu ekle
+import { Observable, BehaviorSubject } from 'rxjs';
+import {environment} from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8080/api/v1'; // 2. URL'in tam olduğundan emin ol
+  private readonly API_URL = `${environment.apiUrl}`;
+
   private userRoleSubject = new BehaviorSubject<string>(this.getUserRoleFromToken());
   userRole$ = this.userRoleSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.API_URL}/users`, credentials).pipe(
-      tap((res: any) => {
-        this.handleToken(res);
-      })
+      tap((res: any) => this.handleToken(res))
     );
   }
 
   register(registrationData: any): Observable<any> {
     return this.http.post(`${this.API_URL}/guests`, registrationData).pipe(
-      tap((res: any) => {
-        this.handleToken(res);
-      })
+      tap((res: any) => this.handleToken(res))
     );
   }
 
+  hasRole(role: string): boolean {
+    return this.getUserRole() === role;
+  }
+
+  hasAnyRole(roles: string[]): boolean {
+    const currentRole = this.getUserRole();
+    return roles.includes(currentRole);
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken() && this.getUserRole() !== 'ANONYMOUS';
+  }
+
   private handleToken(res: any) {
-    console.log('1. Backendden Gelen Yanıt:', res);
-
-    // Backend'den gelen nesnenin içinde 'isDeleted' veya 'active' durumu varsa kontrol edelim
-    // Genelde UserDTO içinde bu bilgi gelir.
-    if (res && res.isDeleted === true) {
-      console.error('HATA: Bu kullanıcı hesabı pasif durumdadır (Soft Deleted).');
-      this.logout();
-      return;
-    }
-
     let token = '';
+    // Backend ApiResponse yapısına göre data içinden tokenı alıyoruz
     if (res && res.data) {
       token = typeof res.data === 'string' ? res.data : res.data.token;
     }
 
     if (token) {
-      console.log('2. Token Başarıyla Ayıklandı:', token);
       sessionStorage.setItem('token', token);
-
-      // Token içindeki payload'u çözüp isDeleted kontrolü yapalım (Eğer Claim olarak eklediysen)
-      const payload = this.decodeToken(token);
-
-      // EĞER Token içine 'isDeleted' claim'i eklediysen (Güvenlik için önerilir):
-      if (payload && payload.isDeleted === true) {
-        console.warn('Token geçerli ama kullanıcı silinmiş görünüyor!');
-        this.logout();
-        return;
-      }
-
-      const role = this.formatRole(payload);
-      this.userRoleSubject.next(role);
-    } else {
-      console.error('HATA: Token bulunamadı!');
+      const role = this.getUserRoleFromToken();
+      this.userRoleSubject.next(role); // Navbar ve componentleri haberdar et
     }
   }
 
-  private decodeToken(token: string): any {
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-      return null;
-    }
+  getUserRole(): string {
+    return this.userRoleSubject.value;
   }
 
-  private formatRole(payload: any): string {
-    if (payload && payload.roles && payload.roles.length > 0) {
-      return payload.roles[0].replace('ROLE_', '');
-    }
-    return 'GUEST';
+  getToken(): string | null {
+    return sessionStorage.getItem('token');
   }
 
   private getUserRoleFromToken(): string {
-    const token = sessionStorage.getItem('token');
+    const token = this.getToken();
     if (!token) return 'ANONYMOUS';
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = this.decodeToken(token);
+      if (!payload) return 'ANONYMOUS';
 
-      // 1. roles dizisi var mı ve içi dolu mu kontrol et
       if (payload.roles && Array.isArray(payload.roles) && payload.roles.length > 0) {
-        // 2. 'ROLE_ADMIN' içindeki 'ROLE_' kısmını atıp sadece 'ADMIN' alalım (Navbar'daki kontrolüne uyması için)
-        const rawRole = payload.roles[0]; // 'ROLE_ADMIN'
-        return rawRole.replace('ROLE_', ''); // Sonuç: 'ADMIN'
+        return payload.roles[0].replace('ROLE_', '');
+      }
+
+      if (payload.role) {
+        return payload.role.replace('ROLE_', '');
       }
 
       return 'GUEST';
@@ -98,25 +82,15 @@ export class AuthService {
     }
   }
 
-  getUserRole(): string {
-    return this.getUserRoleFromToken();
-  }
-
-  getToken() {
-    return sessionStorage.getItem('token');
-  }
-
-  get userRole() {
-    const token = sessionStorage.getItem('token');
-    if (!token) return 'ANONYMOUS';
-
+  private decodeToken(token: string): any {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role;
+      return JSON.parse(atob(token.split('.')[1]));
     } catch (e) {
-      return 'ANONYMOUS';
+      console.error('Token decode error:', e);
+      return null;
     }
   }
+
   logout() {
     sessionStorage.removeItem('token');
     this.userRoleSubject.next('ANONYMOUS');

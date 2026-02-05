@@ -1,16 +1,18 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './auditLogs.component.html'
+  templateUrl: './auditLogs.component.html',
+  styleUrls: ['./auditLogs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
   logs: any[] = [];
-  private readonly API_URL = 'http://localhost:8080/api/v1/audit-logs';
+  private readonly API_URL = `${environment.apiUrl}/audit-logs`;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 

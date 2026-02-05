@@ -2,6 +2,8 @@ package com.github.UsefulHands.reception.features.admin;
 
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
 import com.github.UsefulHands.reception.features.audit.AuditLogService;
+import com.github.UsefulHands.reception.features.guest.GuestDto;
+import com.github.UsefulHands.reception.features.guest.GuestEntity;
 import com.github.UsefulHands.reception.features.user.UserEntity;
 import com.github.UsefulHands.reception.features.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -45,9 +47,22 @@ public class AdminService {
         return adminDto;
     }
 
+    @Transactional
+    public AdminDto editAdmin(Long id, AdminDto adminDto) {
+        log.info("Editing admin");
+
+        AdminEntity adminEntity = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+
+        adminMapper.updateEntityFromDto(adminDto, adminEntity);
+
+        AdminEntity updatedAdmin = adminRepository.save(adminEntity);
+        return adminMapper.toDto(updatedAdmin);
+    }
+
     public List<AdminDto> getAllAdmins() {
         log.info("Retrieving admins");
-        return adminRepository.findAll()
+        return adminRepository.findAllActiveAdmins()
                 .stream()
                 .map(adminMapper::toDto)
                 .collect(Collectors.toList());
@@ -58,5 +73,20 @@ public class AdminService {
         return adminRepository.findByUserId(id)
                 .map(adminMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+    }
+
+    @Transactional
+    public AdminDto deleteAdmin(Long adminId) {
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + adminId));
+
+        if (admin.getUser() != null) {
+            admin.getUser().setDeleted(true);
+        }
+
+        adminRepository.save(admin);
+
+        log.info("Admin and associated User marked as deleted for Admin ID: {}", adminId);
+        return adminMapper.toDto(admin);
     }
 }
