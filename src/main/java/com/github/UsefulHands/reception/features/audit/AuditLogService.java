@@ -19,21 +19,30 @@ public class AuditLogService {
     private final AuditLogMapper auditLogMapper;
 
     @Transactional(readOnly = true)
-    public List<AuditLogDto> getAllLogs() {
+    public List<AuditLogDto> getLogs() {
         log.info("Fetching all audit logs");
-        List<AuditLogEntity> logs = auditLogRepository.findAllByOrderByCreatedAtDesc();
-        return auditLogMapper.toDtoList(logs);
+        return auditLogMapper.toDtoList(auditLogRepository.findAllByOrderByCreatedAtDesc());
     }
 
-    @Async
+    @Async("auditTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(String action, String username, String details) {
-        AuditLogEntity auditLog = AuditLogEntity.builder()
-                .action(action)
-                .performedBy(username)
-                .details(details)
-                .createdAt(LocalDateTime.now())
-                .build();
-        auditLogRepository.save(auditLog);
+        try {
+            // 255 karakter sınırına takılmamak için (SQL TEXT değilse)
+            String safeDetails = (details != null && details.length() > 255)
+                    ? details.substring(0, 252) + "..."
+                    : details;
+
+            AuditLogEntity auditLog = AuditLogEntity.builder()
+                    .action(action)
+                    .performedBy(username != null ? username : "SYSTEM")
+                    .details(safeDetails)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            auditLogRepository.save(auditLog);
+        } catch (Exception e) {
+            log.error("CRITICAL: Failed to write audit log to database!", e);
+        }
     }
 }

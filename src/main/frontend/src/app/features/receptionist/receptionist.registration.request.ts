@@ -1,4 +1,4 @@
-import {ReceptionistModel} from './ReceptionistModel';
+import {ReceptionistModel} from './receptionist.model';
 
 export interface ReceptionistRegistrationRequest {
   receptionistDetails: ReceptionistModel;

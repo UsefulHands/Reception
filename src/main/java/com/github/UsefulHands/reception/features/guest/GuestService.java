@@ -1,11 +1,15 @@
 package com.github.UsefulHands.reception.features.guest;
 
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
-import com.github.UsefulHands.reception.features.admin.AdminDto;
+import com.github.UsefulHands.reception.common.exception.UserNotFoundException;
 import com.github.UsefulHands.reception.features.user.UserEntity;
 import com.github.UsefulHands.reception.features.user.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,16 +24,17 @@ public class GuestService {
     private final GuestRepository guestRepository;
     private final UserService userService;
     private final GuestMapper guestMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public GuestDto registerGuest(GuestDto guestDto, String username, String password) {
-        log.info("Registering Guest: {} {}", guestDto.getFirstName(), guestDto.getLastName());
+        log.info("Registering/Updating Guest: {} {}", guestDto.getFirstName(), guestDto.getLastName());
 
         UserEntity userEntity = userService.createAccount(username, password, "ROLE_GUEST");
 
         GuestEntity guestEntity = guestRepository.findByUserId(userEntity.getId())
                 .map(existingGuest -> {
-                    log.info("Found existing guest profile for user, updating info...");
+                    log.info("Found existing guest profile, updating info...");
                     guestMapper.updateEntityFromDto(guestDto, existingGuest);
                     return existingGuest;
                 })
@@ -40,7 +45,7 @@ public class GuestService {
                     return newGuest;
                 });
 
-        GuestEntity savedGuest = guestRepository.save(guestEntity);
+        GuestEntity savedGuest = guestRepository.saveAndFlush(guestEntity);
 
         GuestDto responseDto = guestMapper.toDto(savedGuest);
         responseDto.setUserId(userEntity.getId());
@@ -49,44 +54,131 @@ public class GuestService {
 
     @Transactional
     public GuestDto editGuest(Long id, GuestDto guestDto) {
-        log.info("Editing guest");
+        log.info("Editing guest id: {}", id);
 
         GuestEntity guestEntity = guestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + id));
+                .filter(g -> g.getUser() == null || !g.getUser().isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Active Guest not found with id: " + id));
 
-        guestMapper.updateEntityFromDto(guestDto, guestEntity);
-
-        GuestEntity updatedGuest = guestRepository.save(guestEntity);
-        return guestMapper.toDto(updatedGuest);
+        try {
+            guestMapper.updateEntityFromDto(guestDto, guestEntity);
+            GuestEntity updatedGuest = guestRepository.saveAndFlush(guestEntity);
+            return guestMapper.toDto(updatedGuest);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // identity_number veya phone_number UNIQUE kısıtlaması için
+            throw new com.github.UsefulHands.reception.common.exception.DataIntegrityException(
+                    "Identity number or phone number already in use!");
+        }
     }
 
-    public List<GuestDto> getAllGuests() {
-        log.info("Retrieving guests");
+    public List<GuestDto> getGuests() {
+        log.info("Retrieving all active guests");
         return guestRepository.findAllActiveGuests()
                 .stream()
                 .map(guestMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public GuestDto getGuest(Long id){
-        log.info("Retrieving guest");
+    public GuestDto getGuest(Long id) {
         return guestRepository.findById(id)
+                .filter(g -> g.getUser() == null || !g.getUser().isDeleted())
                 .map(guestMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Active Guest not found with id: " + id));
     }
 
     @Transactional
-    public GuestDto deleteGuest(Long guestId) {
-        GuestEntity guest = guestRepository.findById(guestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + guestId));
+    public GuestDto deleteGuest(Long id) {
+        GuestEntity guest = guestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Guest not found with id: " + id));
 
         if (guest.getUser() != null) {
             guest.getUser().setDeleted(true);
         }
 
-        guestRepository.save(guest);
-
-        log.info("Guest and associated User marked as deleted for Guest ID: {}", guestId);
-        return guestMapper.toDto(guest);
+        GuestEntity savedGuest = guestRepository.save(guest);
+        log.info("Guest and associated User marked as deleted for Guest ID: {}", id);
+        return guestMapper.toDto(savedGuest);
     }
+
+    public GuestEntity findGuestByUserUsername(String username) {
+        return guestRepository.findActiveGuestByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Active Guest profile not found for: " + username));
+    }
+
+    public GuestDto findByUserId(Long userId) {
+        return guestRepository.findByUserId(userId)
+                .map(guestMapper::toDto)
+                .orElseThrow();
+    }
+
+    @Transactional
+    public GuestDto updateMyProfile(Long userId, GuestProfileUpdateRequest request) {
+        // 1. Kullanıcıyı bul (UserEntity üzerinden Guest'e erişim)
+        GuestEntity guest = guestRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Guest profile not found for user ID: " + userId));
+
+        if (request.getCurrentPassword() != null && !request.getCurrentPassword().isBlank()) {
+
+            // Mevcut şifre doğrulaması
+            if (!passwordEncoder.matches(request.getCurrentPassword(), guest.getUser().getPassword())) {
+                throw new BadCredentialsException("Current password is incorrect!");
+            }
+
+            // Yeni şifre kontrolü ve setlenmesi
+            if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+                guest.getUser().setPassword(passwordEncoder.encode(request.getNewPassword()));
+                // Audit Log: Şifre değişti notu düşülebilir
+            }
+        }
+
+        // 3. Kişisel bilgilerin güncellenmesi
+        guest.setFirstName(request.getFirstName());
+        guest.setLastName(request.getLastName());
+        guest.setPhoneNumber(request.getPhoneNumber());
+        guest.setIdentityNumber(request.getIdentityNumber());
+
+        // 4. Kayıt ve DTO dönüşü
+        GuestEntity updatedGuest = guestRepository.save(guest);
+
+        // 5. AUDIT LOG (Buraya dikkat!)
+        log.info("User {} updated their profile details.", userId);
+        // auditLogService.log(userId, "UPDATE_PROFILE", "User updated personal details.");
+
+        return guestMapper.toDto(updatedGuest);
+    }
+
+    public GuestDto getMe(Authentication authentication) {
+        UserEntity user = (UserEntity) authentication.getPrincipal();
+        GuestDto guestDto = findByUserId(user.getId());
+
+        if (guestDto == null) {
+            throw new UserNotFoundException("Guest record not found");
+        }
+
+        return guestDto;
+    }
+
+    @Transactional
+    public GuestDto updateMe(Authentication authentication, GuestProfileUpdateRequest request) {
+        UserEntity user = (UserEntity) authentication.getPrincipal();
+
+        GuestEntity guestEntity = guestRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new UserNotFoundException("Guest record not found"));
+
+        GuestDto guestDto = GuestDto.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .identityNumber(request.getIdentityNumber())
+                .build();
+
+        GuestDto updatedGuest = editGuest(guestEntity.getId(), guestDto);
+        if (request.getCurrentPassword() != null && request.getNewPassword() != null) {
+            userService.changePassword(user, request.getCurrentPassword(), request.getNewPassword());
+        }
+
+        return updatedGuest;
+    }
+
+
 }

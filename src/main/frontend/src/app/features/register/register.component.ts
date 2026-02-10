@@ -1,17 +1,23 @@
 import { Component } from '@angular/core';
-import {AuthService} from '../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import {RegisterRequest} from './register.request';
+import {ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Component({
   selector: 'app-register',
+  standalone: true,
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  onRegister(username: string, password: string, fName: string, lName: string, phone: string, idNum: string) {
-    const request = {
+  onRegister(username: string, password: string, fName: string, lName: string, phone: string, idNum: string): void {
+    const request: RegisterRequest = {
       username: username,
       password: password,
       guestDetails: {
@@ -23,13 +29,17 @@ export class RegisterComponent {
     };
 
     this.authService.register(request).subscribe({
-      next: (res: any) => {
-        console.log('Registration successful!', res);
-        alert('Registration Successful!');
-        this.router.navigate(['/home']);
+      next: (res: ApiResponse<any>) => {
+        if (res.success) {
+          alert(res.message || 'Registration Successful!');
+          this.router.navigate(['/home']);
+        } else {
+          alert(res.message || 'Registration failed');
+        }
       },
-      error: (err: any) => {
-        alert('Registration error!');
+      error: (err) => {
+        const errorMessage = err.error?.message || 'Registration error!';
+        alert(errorMessage);
         console.error('Registration failed', err);
       }
     });

@@ -63,8 +63,8 @@ CREATE TABLE audit_logs (
 CREATE TABLE rooms (
                        id BIGSERIAL PRIMARY KEY,
                        room_number VARCHAR(20) NOT NULL UNIQUE,
-                       type VARCHAR(50) NOT NULL,    -- SINGLE, DOUBLE, FAMILY, DELUXE
-                       view VARCHAR(50),             -- CITY, OCEAN, GARDEN, MOUNTAIN, POOL, NONE
+                       type VARCHAR(50) NOT NULL,
+                       view VARCHAR(50),
                        beds INT NOT NULL,
                        max_guests INT NOT NULL,
                        area_sqm DOUBLE PRECISION,
@@ -73,10 +73,37 @@ CREATE TABLE rooms (
                        available BOOLEAN NOT NULL DEFAULT TRUE,
                        smoking_allowed BOOLEAN NOT NULL DEFAULT FALSE,
                        floor INT NOT NULL,
+                       status VARCHAR(20) NOT NULL DEFAULT 'CLEAN',
+                       current_reservation_id BIGINT,
+                       is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP,
                        created_by VARCHAR(100),
                        updated_by VARCHAR(100)
+);
+
+CREATE TABLE reservations (
+                              id BIGSERIAL PRIMARY KEY,
+                              room_id BIGINT NOT NULL,
+                              guest_id BIGINT NOT NULL,
+
+                              check_in_date DATE NOT NULL,
+                              check_out_date DATE NOT NULL,
+
+                              status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                              is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+                              total_price DECIMAL(19, 2) NOT NULL,
+                              amount_paid DECIMAL(19, 2) DEFAULT 0,
+
+                              notes TEXT,
+
+                              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                              created_by VARCHAR(255),
+                              updated_at TIMESTAMP,
+                              updated_by VARCHAR(255),
+                              CONSTRAINT fk_room FOREIGN KEY (room_id) REFERENCES rooms(id),
+                              CONSTRAINT fk_guest FOREIGN KEY (guest_id) REFERENCES guests(id)
 );
 
 CREATE TABLE room_bed_types (

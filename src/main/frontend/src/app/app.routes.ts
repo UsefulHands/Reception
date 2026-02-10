@@ -8,6 +8,9 @@ import { AuditLogsComponent} from './features/auditLogs/auditLogs.component';
 import {ReceptionistComponent} from './features/receptionist/receptionist.component';
 import {AdminComponent} from './features/admin/admin.component';
 import {RoomComponent} from './features/room/room.component';
+import {ReservationComponent} from './features/reservation/reservation.component';
+import {PaymentComponent} from './features/payment/payment.component';
+import {ProfileComponent} from './features/profile/profile.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,5 +44,23 @@ export const routes: Routes = [
     component: AuditLogsComponent,
     canActivate: [roleGuard],
     data: { roles: ['ADMIN'] }
-  }
+  },
+  {
+    path: 'reservations',
+    component: ReservationComponent,
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN', 'RECEPTIONIST'] }
+  },
+  {
+    path: 'payments',
+    component: PaymentComponent,
+    canActivate: [roleGuard],
+    data: { roles: ['GUEST'] }
+  },
+  {
+    path: 'profiles',
+    component: ProfileComponent,
+    canActivate: [roleGuard],
+    data: { roles: ['GUEST'] }
+  },
 ];

@@ -23,6 +23,9 @@ public class RoomDto {
     @NotNull(message = "Room type is required")
     private String type;
 
+    @NotNull(message = "Room status is required")
+    private String status;
+
     @NotEmpty(message = "At least one bed type must be specified")
     private Set<String> bedTypes;
 
@@ -52,4 +55,9 @@ public class RoomDto {
     private Set<String> amenities;
 
     private List<String> images;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long currentReservationId;
+
+    private boolean isDeleted = false;
 }

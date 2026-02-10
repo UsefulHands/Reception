@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://app:8080/api/v1'
+  apiUrl: '/api/v1'
 };
 
 // ng serve development için çalışır, build yaptıktan sonra kullanmazsın.

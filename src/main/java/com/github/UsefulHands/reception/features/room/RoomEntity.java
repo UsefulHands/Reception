@@ -28,6 +28,10 @@ public class RoomEntity extends BaseEntity {
     @Column(nullable = false)
     private RoomType type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoomStatus status;
+
     @ElementCollection(targetClass = BedType.class)
     @CollectionTable(name = "room_bed_types", joinColumns = @JoinColumn(name = "room_id"))
     @Enumerated(EnumType.STRING)
@@ -73,4 +77,10 @@ public class RoomEntity extends BaseEntity {
     @Column(name = "image_url")
     @Builder.Default
     private List<String> images = new ArrayList<>();
+
+    @Column(name = "current_reservation_id")
+    private Long currentReservationId;
+
+    @Column(nullable = false)
+    private boolean isDeleted;
 }

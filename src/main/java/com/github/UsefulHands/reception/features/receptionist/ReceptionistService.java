@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,51 +30,63 @@ public class ReceptionistService {
 
     @Transactional
     public ReceptionistDto registerReceptionist(String username, String password, ReceptionistDto receptionistDto) {
-        log.info("Registering new Admin: {}", receptionistDto.getFirstName());
+        log.info("Registering/Updating Receptionist: {}", receptionistDto.getFirstName());
 
         UserEntity userEntity = userService.createAccount(username, password, "ROLE_RECEPTIONIST");
-        ReceptionistEntity entity = receptionistMapper.toEntity(receptionistDto);
-        entity.setUser(userEntity);
-        ReceptionistEntity savedReceptionist = receptionistRepository.save(entity);
 
-        log.info("Receptionist profile saved with ID: {} for User ID: {}", savedReceptionist.getId(), userEntity.getId());
-        String actor = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-        auditLogService.log("RECEPTION_REGISTER", actor, "Registered new Receptionist: " + username);
+        ReceptionistEntity receptionistEntity = receptionistRepository.findByUserId(userEntity.getId())
+                .map(existing -> {
+                    receptionistMapper.updateEntityFromDto(receptionistDto, existing);
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    ReceptionistEntity newReceptionist = receptionistMapper.toEntity(receptionistDto);
+                    newReceptionist.setUser(userEntity);
+                    return newReceptionist;
+                });
 
-        receptionistDto.setId(savedReceptionist.getId());
-        receptionistDto.setUserId(userEntity.getId());
-        return receptionistMapper.toDto(savedReceptionist);
+        ReceptionistEntity savedReceptionist = receptionistRepository.saveAndFlush(receptionistEntity);
+
+        auditLogService.log("RECEPTION_REGISTER", getSafeActor(), "Registered/Updated Receptionist: " + username);
+
+        ReceptionistDto responseDto = receptionistMapper.toDto(savedReceptionist);
+        responseDto.setUserId(userEntity.getId());
+        return responseDto;
     }
 
     @Transactional
     public ReceptionistDto editReceptionist(Long id, ReceptionistDto receptionistDto) {
-        log.info("Editing receptionist");
+        ReceptionistEntity entity = receptionistRepository.findById(id)
+                .filter(r -> r.getUser() != null && !r.getUser().isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Active Receptionist not found with id: " + id));
 
-        ReceptionistEntity receptionistEntity = receptionistRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Receptionist not found with id: " + id));
+        try {
+            receptionistMapper.updateEntityFromDto(receptionistDto, entity);
+            ReceptionistEntity updated = receptionistRepository.saveAndFlush(entity);
 
-        receptionistMapper.updateEntityFromDto(receptionistDto, receptionistEntity);
+            auditLogService.log("RECEPTION_UPDATE", getSafeActor(), "Updated Receptionist: " + updated.getId());
 
-        ReceptionistEntity updatedReceptionist = receptionistRepository.save(receptionistEntity);
-        return receptionistMapper.toDto(updatedReceptionist);
+            return receptionistMapper.toDto(updated);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new com.github.UsefulHands.reception.common.exception.DataIntegrityException(
+                    "Employee ID already in use!");
+        }
     }
 
-    public List<ReceptionistDto> getAllReceptionists() {
-        log.info("Retrieving receptionists");
+    public List<ReceptionistDto> getReceptionists() {
+        log.info("Retrieving all active receptionists");
         return receptionistRepository.findAllActiveReceptionists()
                 .stream()
                 .map(receptionistMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public ReceptionistDto getReceptionist(Long id){
-        log.info("Retrieving receptionist");
-        return receptionistRepository.findByUserId(id)
+    public ReceptionistDto getReceptionist(Long id) {
+        // Genelde profil sorguları Admin ID (PK) üzerinden yapılır
+        return receptionistRepository.findById(id)
+                .filter(r -> r.getUser() != null && !r.getUser().isDeleted())
                 .map(receptionistMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Receptionist not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Active Receptionist not found with id: " + id));
     }
 
     @Transactional
@@ -85,9 +98,17 @@ public class ReceptionistService {
             receptionist.getUser().setDeleted(true);
         }
 
-        receptionistRepository.save(receptionist);
+        receptionistRepository.saveAndFlush(receptionist);
 
-        log.info("Receptionist and associated User marked as deleted for Guest ID: {}", receptionistId);
+        auditLogService.log("RECEPTION_DELETE", getSafeActor(), "Deleted Receptionist ID: " + receptionistId);
+
+        log.info("Receptionist and associated User marked as deleted for ID: {}", receptionistId);
         return receptionistMapper.toDto(receptionist);
+    }
+
+    private String getSafeActor() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(java.security.Principal::getName)
+                .orElse("SYSTEM");
     }
 }

@@ -1,0 +1,60 @@
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-dark text-white py-3">
+          <h5 class="mb-0 fw-bold">Reservation Summary</h5>
+        </div>
+        <div class="card-body p-4" *ngIf="bookingData">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Room Number:</span>
+            <span class="fw-bold">{{ bookingData.roomNumber }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Check-In:</span>
+            <span>{{ bookingData.checkInDate }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Check-Out:</span>
+            <span>{{ bookingData.checkOutDate }}</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Total Price</h5>
+            <h3 class="text-primary fw-bold mb-0">${{ bookingData.totalPrice }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h4 class="fw-bold mb-4">Payment Details</h4>
+        <form (ngSubmit)="confirmPayment()">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Card Holder Name</label>
+            <input type="text" class="form-control" [(ngModel)]="cardDetails.holderName" name="holder" required placeholder="John Doe">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Card Number</label>
+            <input type="text" class="form-control" [(ngModel)]="cardDetails.cardNumber" name="cardNo" required placeholder="0000 0000 0000 0000">
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label small fw-bold text-muted">Expiry Date</label>
+              <input type="text" class="form-control" [(ngModel)]="cardDetails.expiryDate" name="exp" placeholder="MM/YY">
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label small fw-bold text-muted">CVV</label>
+              <input type="password" class="form-control" [(ngModel)]="cardDetails.cvv" name="cvv" placeholder="***">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-3 shadow" [disabled]="isProcessing">
+            <span *ngIf="isProcessing" class="spinner-border spinner-border-sm me-2"></span>
+            PAY NOW ${{ bookingData?.totalPrice }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

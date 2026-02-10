@@ -1,0 +1,97 @@
+<div class="profile-wrapper d-flex justify-content-center align-items-center min-vh-100 py-5">
+  <div class="bg-shape-1"></div>
+  <div class="bg-shape-2"></div>
+
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden profile-card animate-fade-up" style="width: 35rem;">
+    <div class="profile-accent bg-primary"></div>
+
+    <div class="card-body p-5 bg-white">
+      <div class="text-center mb-4">
+        <div class="profile-icon mb-3 bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center">
+          <i class="bi bi-person-bounding-box fs-2"></i>
+        </div>
+        <h2 class="fw-bold text-dark mb-1">My Profile</h2>
+        <p class="text-muted small">Manage your account and personal details</p>
+      </div>
+
+      <div class="section-divider mb-4">
+        <span class="bg-white px-3 text-primary fw-bold small uppercase">Account Info</span>
+      </div>
+
+      <div class="form-floating mb-4">
+        <input type="text" class="form-control border-light-subtle bg-secondary-subtle"
+               id="userInput" [value]="currentUser.userName" readonly>
+        <label for="userInput"><i class="bi bi-lock-fill me-2"></i>Username (Permanent)</label>
+      </div>
+
+      <div class="section-divider mb-4">
+        <span class="bg-white px-3 text-primary fw-bold small uppercase">Personal Information</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <input [(ngModel)]="currentUser.firstName" type="text" class="form-control border-light-subtle bg-light" id="fnInput">
+            <label for="fnInput">First Name</label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <input [(ngModel)]="currentUser.lastName" type="text" class="form-control border-light-subtle bg-light" id="lnInput">
+            <label for="lnInput">Last Name</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input [(ngModel)]="currentUser.phoneNumber" type="text" class="form-control border-light-subtle bg-light" id="phoneInput">
+        <label for="phoneInput"><i class="bi bi-telephone me-2"></i>Phone Number</label>
+      </div>
+
+      <div class="form-floating mb-4">
+        <input [(ngModel)]="currentUser.identityNumber" type="text" class="form-control border-light-subtle bg-light" id="idInput">
+        <label for="idInput"><i class="bi bi-card-heading me-2"></i>Identity Number</label>
+      </div>
+      <div class="section-divider mb-4">
+        <span class="bg-white px-3 text-primary fw-bold small uppercase">Change Password</span>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input [(ngModel)]="passwordData.currentPassword" type="password" class="form-control border-light-subtle bg-light" id="oldPassInput" placeholder="Current Password">
+        <label for="oldPassInput"><i class="bi bi-shield-lock me-2"></i>Current Password</label>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <input [(ngModel)]="passwordData.newPassword" type="password" class="form-control border-light-subtle bg-light" id="newPassInput" placeholder="New Password">
+            <label for="newPassInput">New Password</label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-floating mb-4">
+            <input [(ngModel)]="passwordData.confirmPassword"
+                   type="password"
+                   class="form-control border-light-subtle bg-light"
+                   [class.is-invalid]="passwordData.newPassword !== passwordData.confirmPassword && passwordData.confirmPassword"
+                   id="confirmPassInput">
+            <label for="confirmPassInput"><i class="bi bi-check-circle-fill me-2"></i>Confirm</label>
+            <div *ngIf="passwordData.newPassword !== passwordData.confirmPassword && passwordData.confirmPassword" class="text-danger small mt-1">
+              Mismatch
+            </div>
+          </div>
+        </div>
+      </div>
+      <button (click)="onUpdateProfile()"
+              class="btn btn-primary btn-lg w-100 shadow-sm rounded-3 fw-bold py-3 mb-3">
+        UPDATE PROFILE DETAILS
+      </button>
+
+      <div class="text-center mt-4 border-top pt-3">
+        <small class="text-muted d-flex align-items-center justify-content-center gap-1">
+          <i class="bi bi-shield-check text-success"></i> Account verified by JWT Security
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

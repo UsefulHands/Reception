@@ -48,10 +48,18 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // 400 - Duplicate Resource: This username is already taken by someone else
+    // 409 - Duplicate Resource: This username is already taken by someone else
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Void>> handleUsernameExists(UsernameAlreadyExistsException ex) {
         log.warn("Username Already Exists: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    // 400 - Database concurrent operation error
+    @ExceptionHandler(DataIntegrityException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityException ex) {
+        log.warn("Database concurrent operation error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
     }

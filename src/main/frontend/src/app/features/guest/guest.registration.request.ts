@@ -1,4 +1,4 @@
-import {GuestModel} from './GuestModel';
+import {GuestModel} from './guest.model';
 
 export interface GuestRegistrationRequest {
   guestDetails: GuestModel;

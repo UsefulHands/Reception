@@ -25,6 +25,6 @@ public class ReceptionistEntity extends BaseEntity {
     private String shiftType; // Morning, Evening, Night
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true, nullable = false)
     private UserEntity user;
 }

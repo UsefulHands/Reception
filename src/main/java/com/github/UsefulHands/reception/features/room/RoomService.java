@@ -1,14 +1,18 @@
 package com.github.UsefulHands.reception.features.room;
 
+import com.github.UsefulHands.reception.common.exception.DataIntegrityException;
 import com.github.UsefulHands.reception.features.audit.AuditLogService;
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,77 +26,89 @@ public class RoomService {
 
     @Transactional
     public RoomDto createRoom(RoomDto roomDto) {
-        log.info("Creating new room: {}", roomDto.getRoomNumber());
-
-        if(roomRepository.findByRoomNumber(roomDto.getRoomNumber()).isPresent()) {
-            throw new RuntimeException("Room number " + roomDto.getRoomNumber() + " already exists!");
+        log.info("Processing room creation for: {}", roomDto.getRoomNumber());
+        try {
+            return roomRepository.findByRoomNumber(roomDto.getRoomNumber())
+                    .map(existingRoom -> {
+                        if (!existingRoom.isDeleted()) {
+                            throw new DataIntegrityException("Room number " + roomDto.getRoomNumber() + " already exists and is active!");
+                        }
+                        log.info("Re-activating deleted room: {}", roomDto.getRoomNumber());
+                        roomMapper.updateEntityFromDto(roomDto, existingRoom);
+                        existingRoom.setDeleted(false);
+                        return roomMapper.toDto(roomRepository.saveAndFlush(existingRoom));
+                    })
+                    .orElseGet(() -> {
+                        log.info("Creating brand new room: {}", roomDto.getRoomNumber());
+                        RoomEntity newRoom = roomMapper.toEntity(roomDto);
+                        newRoom.setDeleted(false);
+                        return roomMapper.toDto(roomRepository.saveAndFlush(newRoom));
+                    });
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityException("A room with this number was just created by someone else!");
         }
-
-        RoomEntity savedRoom = roomRepository.save(roomMapper.toEntity(roomDto));
-
-        // AUDIT LOG - @Async metodunu çağırıyoruz
-        auditLogService.log(
-                "ROOM_CREATE",
-                getCurrentUsername(),
-                "Created room number: " + savedRoom.getRoomNumber()
-        );
-
-        return roomMapper.toDto(savedRoom);
-    }
-
-    public List<RoomDto> getAvailableRooms() {
-        log.info("Retrieving available rooms");
-        return roomRepository.findByAvailableTrue()
-                .stream()
-                .map(roomMapper::toDto)
-                .collect(Collectors.toList());
     }
 
     @Transactional
     public RoomDto editRoom(Long id, RoomDto roomDto) {
         RoomEntity roomEntity = roomRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
+                .filter(room -> !room.isDeleted()) // Silinmiş oda güncellenemez
+                .orElseThrow(() -> new ResourceNotFoundException("Active room not found with id: " + id));
 
-        roomMapper.updateEntityFromDto(roomDto, roomEntity);
-        RoomEntity updatedRoom = roomRepository.save(roomEntity);
+        try {
+            roomMapper.updateEntityFromDto(roomDto, roomEntity);
+            RoomEntity updatedRoom = roomRepository.saveAndFlush(roomEntity); // Hata fırlatması için flush
 
-        // AUDIT LOG
-        auditLogService.log(
-                "ROOM_UPDATE",
-                getCurrentUsername(),
-                "Updated room: " + updatedRoom.getRoomNumber() + " details."
-        );
+            String actor = getSafeActor();
+            auditLogService.log("ROOM_UPDATE", actor, "Updated room: " + updatedRoom.getRoomNumber());
 
-        return roomMapper.toDto(updatedRoom);
+            return roomMapper.toDto(updatedRoom);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityException("Room number " + roomDto.getRoomNumber() + " is already taken by another room!");
+        }
     }
 
     @Transactional
     public RoomDto deleteRoom(Long id) {
         RoomEntity room = roomRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
+                .filter(r -> !r.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Active room not found with id: " + id));
 
-        RoomDto deletedRoomDto = roomMapper.toDto(room);
-        String roomNumber = room.getRoomNumber();
+        if (room.getStatus() == RoomStatus.OCCUPIED) {
+            throw new DataIntegrityException("Cannot delete a room that is currently occupied!");
+        }
 
-        roomRepository.delete(room);
+        room.setDeleted(true);
+        roomRepository.saveAndFlush(room);
 
-        roomRepository.flush();
-
-        auditLogService.log(
-                "ROOM_DELETE",
-                getCurrentUsername(),
-                "Deleted room number: " + roomNumber
-        );
-
-        return deletedRoomDto;
+        auditLogService.log("ROOM_DELETE", getSafeActor(), "Deleted room number: " + room.getRoomNumber());
+        return roomMapper.toDto(room);
     }
 
-    // Helper method to get current user from Security Context
-    private String getCurrentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    public RoomDto getRoom(Long id) {
+        return roomRepository.findById(id)
+                .filter(room -> !room.isDeleted())
+                .map(roomMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found or it has been deleted."));
     }
 
-    // GET metodları (Audit logsuz) aynı kalıyor...
-    public List<RoomDto> getAllRooms() { return roomRepository.findAll().stream().map(roomMapper::toDto).collect(Collectors.toList()); }
-    public RoomDto getRoom(Long id) { return roomRepository.findById(id).map(roomMapper::toDto).orElseThrow(() -> new ResourceNotFoundException("Not found")); }
+    public List<RoomDto> getRooms() {
+        return roomRepository.findAllActiveRooms()
+                .stream()
+                .map(roomMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<RoomDto> getAvailableRooms() {
+        return roomRepository.findByAvailableTrueAndIsDeletedFalse()
+                .stream()
+                .map(roomMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private String getSafeActor() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Principal::getName)
+                .orElse("SYSTEM");
+    }
 }

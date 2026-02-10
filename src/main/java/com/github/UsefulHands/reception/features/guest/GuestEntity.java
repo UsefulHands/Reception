@@ -28,6 +28,6 @@ public class GuestEntity extends BaseEntity {
     private String identityNumber;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true, nullable = false)
     private UserEntity user;
 }

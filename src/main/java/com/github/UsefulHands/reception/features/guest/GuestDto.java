@@ -22,7 +22,6 @@ public class GuestDto {
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Please provide a valid phone number or keep blank")
     private String phoneNumber;
 
-
     private String identityNumber;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

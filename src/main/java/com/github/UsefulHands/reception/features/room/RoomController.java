@@ -34,7 +34,7 @@ public class RoomController {
     public ResponseEntity<ApiResponse<List<RoomDto>>> getRooms(@RequestParam(required = false) Boolean available) {
         List<RoomDto> rooms = (available != null && available)
                 ? roomService.getAvailableRooms()
-                : roomService.getAllRooms();
+                : roomService.getRooms();
         return ResponseEntity.ok(ApiResponse.success(rooms, "Rooms retrieved"));
     }
 

@@ -1,20 +1,21 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import { RoomService } from './room.service';
-import { AuthService } from '../../core/services/auth.service';
-import { RoomModel } from '../../core/models/room/RoomModel';
-import { ApiResponse } from '../../core/models/api/ApiResponse';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { RoomService } from './room.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ReservationService } from '../reservation/reservation.service';
+import { RoomModel } from './room.model';
+import { ROOM_CONSTANTS } from './room.constants';
+import { ApiResponse } from '../../core/models/api/ApiResponse';
 
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-room',
   templateUrl: './room.component.html',
-  imports: [
-    FormsModule,
-    CommonModule
-  ],
+  standalone: true,
+  imports: [FormsModule, CommonModule],
   styleUrls: ['./room.component.css']
 })
 export class RoomComponent implements OnInit {
@@ -22,15 +23,23 @@ export class RoomComponent implements OnInit {
   selectedRoom: RoomModel = this.getEmptyRoom();
   detailRoom: RoomModel | null = null;
 
+  reservationDates = { checkIn: '', checkOut: '' };
   isEditMode = false;
   showAvailableOnly = false;
 
-  roomTypes = ['SINGLE', 'DOUBLE', 'SUITE', 'DELUXE', 'FAMILY'];
-  viewTypes = ['SEA', 'GARDEN', 'CITY', 'MOUNTAIN', 'NONE'];
-  bedTypeOptions = ['SINGLE', 'DOUBLE', 'QUEEN', 'KING', 'SOFA'];
-  amenitiesList = ['WIFI', 'TV', 'MINIBAR', 'AIR_CONDITIONING', 'SAFE', 'BALCONY', 'JACUZZI'];
+  roomTypes = ROOM_CONSTANTS.types;
+  roomStatuses = ROOM_CONSTANTS.statuses;
+  viewTypes = ROOM_CONSTANTS.views;
+  bedTypeOptions = ROOM_CONSTANTS.bedTypes;
+  amenitiesList = ROOM_CONSTANTS.amenities;
 
-  constructor(private roomService: RoomService, public authService: AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private roomService: RoomService,
+    public authService: AuthService,
+    private reservationService: ReservationService,
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadRooms();
@@ -38,8 +47,10 @@ export class RoomComponent implements OnInit {
 
   get isAdmin() { return this.authService.hasRole('ADMIN'); }
   get canModify() { return this.authService.hasAnyRole(['ADMIN', 'RECEPTIONIST']); }
+  get isGuest() { return this.authService.hasRole('GUEST'); }
+  get canReserveRoom() { return this.isGuest || !this.authService.isLoggedIn(); }
 
-  loadRooms() {
+  loadRooms(): void {
     const call = this.showAvailableOnly ? this.roomService.getAvailableRooms() : this.roomService.getAllRooms();
     call.subscribe((res: ApiResponse<RoomModel[]>) => {
       this.rooms = res.data;
@@ -47,75 +58,107 @@ export class RoomComponent implements OnInit {
     });
   }
 
-  saveRoom() {
-    if (!this.selectedRoom.beds || this.selectedRoom.beds < 1) this.selectedRoom.beds = 1;
-    if (!this.selectedRoom.maxGuests || this.selectedRoom.maxGuests < 1) this.selectedRoom.maxGuests = 1;
-
-    if (!this.selectedRoom.bedTypes || this.selectedRoom.bedTypes.length === 0) {
-      alert("Please select at least one bed type.");
+  confirmQuickReservation(): void {
+    if (!this.reservationDates.checkIn || !this.reservationDates.checkOut) {
+      alert("Please select dates.");
       return;
     }
+
+    const reservationRequest = {
+      roomId: this.detailRoom?.id,
+      roomNumber: this.detailRoom?.roomNumber,
+      checkInDate: this.reservationDates.checkIn,
+      checkOutDate: this.reservationDates.checkOut,
+      totalPrice: this.calculateTotalPrice()
+    };
+
+    this.reservationService.setTemporaryBooking(reservationRequest);
+    this.closeModal('quickReserveModal');
+
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/payment' } });
+    } else {
+      this.router.navigate(['/payments']);
+    }
+  }
+
+  calculateTotalPrice(): number {
+    const nights = this.getNightCount();
+    const basePrice = this.detailRoom?.price || 0;
+    return nights > 0 ? nights * basePrice : basePrice;
+  }
+
+  getNightCount(): number {
+    if (!this.reservationDates.checkIn || !this.reservationDates.checkOut) return 0;
+    const start = new Date(this.reservationDates.checkIn);
+    const end = new Date(this.reservationDates.checkOut);
+    const diff = end.getTime() - start.getTime();
+    const nights = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return nights > 0 ? nights : 0;
+  }
+
+  saveRoom(): void {
+    if (!this.selectedRoom.bedTypes?.length) {
+      alert("Select at least one bed type.");
+      return;
+    }
+
+    const confirmMsg = this.isEditMode ? "Update this room?" : "Create this room?";
+    if (!confirm(confirmMsg)) return;
 
     const request = this.isEditMode && this.selectedRoom.id
       ? this.roomService.editRoom(this.selectedRoom.id, this.selectedRoom)
       : this.roomService.createRoom(this.selectedRoom);
 
     request.subscribe({
-      next: () => {
+      next: (res) => {
+        alert(res.message);
         this.resetForm();
         this.loadRooms();
       },
-      error: (err) => {
-        console.error("Backend hatası:", err);
-        alert("Error saving room.");
-      }
+      error: (err) => alert(err.error?.message || "Operation failed.")
     });
   }
 
-  editRoom(room: RoomModel) {
+  editRoom(room: RoomModel): void {
     this.selectedRoom = JSON.parse(JSON.stringify(room));
     this.isEditMode = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  deleteRoom(id: number) {
-    if (confirm('Are you sure you want to delete this room?')) {
+  deleteRoom(id: number): void {
+    if (confirm("Are you sure?")) {
       this.roomService.deleteRoom(id).subscribe(() => this.loadRooms());
     }
   }
 
-  viewDetails(room: RoomModel) {
+  viewDetails(room: RoomModel): void {
     this.detailRoom = room;
-    const modalElement = document.getElementById('roomDetailModal');
-    if (modalElement) {
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
+    this.openModal('roomDetailModal');
   }
 
-  toggleAvailableFilter() {
+  toggleAvailableFilter(): void {
     this.showAvailableOnly = !this.showAvailableOnly;
     this.loadRooms();
   }
 
-  toggleBedType(type: string) {
-    this.toggleSelection(this.selectedRoom.bedTypes, type);
+  toggleBedType(type: string): void {
+    const idx = this.selectedRoom.bedTypes.indexOf(type);
+    if (idx > -1) this.selectedRoom.bedTypes.splice(idx, 1);
+    else this.selectedRoom.bedTypes.push(type);
   }
 
-  toggleSelection(list: any[], item: any) {
-    const idx = list.indexOf(item);
-    if (idx > -1) {
-      list.splice(idx, 1);
-    } else {
-      list.push(item);
-    }
+  toggleAmenity(type: string): void {
+    const idx = this.selectedRoom.amenities.indexOf(type);
+    if (idx > -1) this.selectedRoom.amenities.splice(idx, 1);
+    else this.selectedRoom.amenities.push(type);
   }
 
-  updateImages(csv: string) {
+  updateImages(csv: string): void {
     this.selectedRoom.images = csv ? csv.split(',').map(s => s.trim()).filter(s => s !== '') : [];
   }
 
-  resetForm() {
+  resetForm(): void {
     this.selectedRoom = this.getEmptyRoom();
     this.isEditMode = false;
     this.cdr.detectChanges();
@@ -123,20 +166,28 @@ export class RoomComponent implements OnInit {
 
   private getEmptyRoom(): RoomModel {
     return {
-      roomNumber: '',
-      type: 'SINGLE',
-      bedTypes: [],
-      beds: 1,
-      maxGuests: 2,
-      areaSqm: 25,
-      view: 'CITY',
-      description: '',
-      price: 100,
-      available: true,
-      smokingAllowed: false,
-      floor: 1,
-      amenities: [],
-      images: []
+      roomNumber: '', type: 'SINGLE', status: 'CLEAN', bedTypes: [],
+      beds: 1, maxGuests: 2, areaSqm: 25, view: 'CITY',
+      description: '', price: 100, available: true,
+      smokingAllowed: false, floor: 1, amenities: [], images: []
     };
+  }
+
+  openReservationModal(): void {
+    this.closeModal('roomDetailModal');
+    this.openModal('quickReserveModal');
+  }
+
+  private openModal(id: string): void {
+    const el = document.getElementById(id);
+    if (el) new bootstrap.Modal(el).show();
+  }
+
+  private closeModal(id: string): void {
+    const el = document.getElementById(id);
+    if (el) {
+      const modal = bootstrap.Modal.getInstance(el);
+      if (modal) modal.hide();
+    }
   }
 }

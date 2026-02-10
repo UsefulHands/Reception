@@ -1,12 +1,12 @@
 package com.github.UsefulHands.reception.features.guest;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
-import com.github.UsefulHands.reception.features.receptionist.ReceptionistDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/guests")
 @RequiredArgsConstructor
+@Slf4j
 public class GuestController {
 
     private final GuestService guestService;
@@ -38,7 +39,7 @@ public class GuestController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RECEPTIONIST')")
     public ResponseEntity<ApiResponse<List<GuestDto>>> getGuests() {
-        List<GuestDto> guests = guestService.getAllGuests();
+        List<GuestDto> guests = guestService.getGuests();
         return ResponseEntity.ok(ApiResponse.success(guests, "Guests retrieved"));
     }
 
@@ -47,6 +48,20 @@ public class GuestController {
     public ResponseEntity<ApiResponse<GuestDto>> getGuest(@PathVariable Long id){
         GuestDto guestDto = guestService.getGuest(id);
         return ResponseEntity.ok(ApiResponse.success(guestDto, "Guest retrieved"));
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('GUEST')")
+    public ResponseEntity<ApiResponse<GuestDto>> getMe(Authentication authentication) {
+        GuestDto me = guestService.getMe(authentication);
+        return ResponseEntity.ok(ApiResponse.success(me, "Profile retrieved"));
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("hasRole('GUEST')")
+    public ResponseEntity<ApiResponse<GuestDto>> updateMe(Authentication authentication, @Valid @RequestBody GuestProfileUpdateRequest request) {
+        GuestDto updated = guestService.updateMe(authentication, request);
+        return ResponseEntity.ok(ApiResponse.success(updated, "Profile updated"));
     }
 
     @DeleteMapping("/{id}")

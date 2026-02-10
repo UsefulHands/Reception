@@ -1,0 +1,84 @@
+.grid-scroll-container { overflow-x: auto; position: relative; }
+
+.sticky-column {
+  position: sticky;
+  left: 0;
+  z-index: 110;
+  border-right: 2px solid #dee2e6 !important;
+  background-color: #f8f9fa;
+}
+
+.cell-square {
+  min-width: 45px;
+  width: 45px;
+  height: 60px;
+  border: 1px solid #f0f0f0 !important;
+  vertical-align: middle;
+}
+
+.res-cylinder {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  transform: translateY(-50%);
+  height: 32px;
+  border-radius: 20px;
+  z-index: 20;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ana silindir yapısı */
+.res-cylinder {
+  background-color: #3498db; /* Varsayılan Mavi */
+}
+
+/* Statü bazlı renkler */
+.res-cylinder.confirmed { background-color: #0d6efd !important; }
+.res-cylinder.pending { background-color: #f1c40f !important; }
+.res-cylinder.checked_in { background-color: #2ecc71 !important; }
+.res-cylinder.checked_out { background-color: #95a5a6 !important; }
+.res-cylinder.cancelled { background-color: #e74c3c !important; }
+.res-cylinder.no_show { background-color: #8e44ad !important; }
+
+/* Özel Buton Stilleri */
+.btn-outline-info.rounded-pill:hover { color: #fff; }
+
+.res-cylinder:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+  z-index: 150;
+}
+
+.res-info-tooltip {
+  display: none;
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #212529;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.res-cylinder:hover .res-info-tooltip { display: block; }
+
+.res-info-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+  border-width: 5px; border-style: solid; border-color: #212529 transparent transparent transparent;
+}
+
+.empty-cell-hover { cursor: pointer; transition: background 0.2s; height: 100%; width: 100%; }
+.empty-cell-hover:hover { background-color: rgba(13, 110, 253, 0.08); }
+
+.grid-scroll-container::-webkit-scrollbar { height: 10px; }
+.grid-scroll-container::-webkit-scrollbar-thumb { background: #212529; border-radius: 10px; }

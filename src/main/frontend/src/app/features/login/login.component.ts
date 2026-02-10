@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import {Router} from '@angular/router';
+import {LoginRequest} from './login.request';
+import {ApiResponse} from '../../core/models/api/ApiResponse';
+import {LoginResponse} from './login.response';
 
 @Component({
   selector: 'app-login',
@@ -9,13 +12,24 @@ import {Router} from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
-  onLogin(u: string, p: string) {
-    this.auth.login({ username: u, password: p }).subscribe({
-      next: (res) => {
-        alert('Login Successful!');
-        this.router.navigate(['/home']);
+  onLogin(username: string, password: string) {
+    const credentials: LoginRequest = { username, password };
+
+    this.authService.login(credentials).subscribe({
+      next: (res: ApiResponse<string>) => {
+        if (res.success) {
+          alert('Login Successful!');
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          alert('Login failed: ' + res.message);
+        }
       },
       error: (err) => {
         alert('Login error: ' + (err.error?.message || err.message));

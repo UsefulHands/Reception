@@ -2,6 +2,7 @@ export interface RoomModel {
   id?: number;
   roomNumber: string;
   type: string;
+  status: string;
   bedTypes: string[];
   beds: number;
   maxGuests: number;

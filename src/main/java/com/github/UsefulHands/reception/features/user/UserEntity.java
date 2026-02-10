@@ -35,7 +35,6 @@ public class UserEntity extends BaseEntity implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(this.role));
     }
-
     @Override
     public boolean isAccountNonExpired() { return true; }
     @Override

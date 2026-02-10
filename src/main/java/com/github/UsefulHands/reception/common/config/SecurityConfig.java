@@ -1,7 +1,6 @@
 package com.github.UsefulHands.reception.common.config;
 
 import com.github.UsefulHands.reception.common.security.JwtAuthenticationFilter;
-import com.github.UsefulHands.reception.features.user.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

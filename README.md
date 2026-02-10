@@ -120,7 +120,5 @@ Very important
 
 ### 2.Docker-Container
 * If installations are ok,
-1. Open directory src/main/frontend and use command (npm run build). This will put the frontend inside src/main/resources/static directory.
-2. use command "./mvnw clean package -DskipTests" inside project directory. This will create .jar file in /target directory.
-* I have set a DockerFile for you :). Just run the command (docker compose up --build -d)
-* check the url (http://localhost:8082/)
+* I have set 2 DockerFiles and a docker-compose.yml file for you :). Just run the command (docker compose up --build -d)
+* check the url (http://localhost:4200/)

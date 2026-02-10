@@ -1,0 +1,173 @@
+<div class="container-fluid py-4 bg-secondary-subtle min-vh-100">
+  <div class="container-fluid px-md-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border border-2 border-dark-subtle">
+      <h4 class="fw-bold mb-0 text-dark text-uppercase">
+        <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>HOTEL PMS GRID
+      </h4>
+      <div class="d-flex gap-2">
+        <input type="month" class="form-control border-secondary shadow-sm w-auto fw-bold" [(ngModel)]="selectedDate" (change)="updateCalendar()">
+        <button class="btn btn-dark shadow-sm px-3" (click)="loadGridData()">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive shadow-lg rounded-4 bg-white border border-2 border-dark-subtle grid-scroll-container">
+      <table class="table table-bordered mb-0 border-0">
+        <thead class="table-dark">
+        <tr>
+          <th class="sticky-column bg-dark text-center py-3 border-bottom-0" style="min-width: 120px; z-index: 100;">ROOM</th>
+          <th *ngFor="let day of daysInMonth" class="text-center small py-3 cell-square border-bottom-0">{{ day }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let room of rooms" class="hover-row">
+          <td class="sticky-column fw-bold bg-light text-center align-middle border-end">
+            <span class="badge bg-dark px-3 py-2 shadow-sm w-100">{{ room.roomNumber }}</span>
+          </td>
+
+          <td *ngFor="let day of daysInMonth" class="p-0 position-relative cell-square align-middle">
+
+            <ng-container *ngIf="getReservationStart(room.id, day) as res">
+              <div (click)="openEditReservation(res.id!)"
+                   class="res-cylinder shadow-sm"
+                   [ngClass]="res.status?.toLowerCase()"
+                   [style.width]="calculateWidth(res.checkInDate, res.checkOutDate)">
+                <div class="res-info-tooltip shadow-lg">
+                  <i class="bi bi-person-fill me-1"></i>
+                  {{ res.guestFullName || (res.guestFullName) || 'Unknown Guest' }}
+                  <small class="ms-1">({{ res.status || 'N/A' }})</small>
+                </div>
+              </div>
+            </ng-container>
+
+            <div *ngIf="!isDayOccupied(room.id, day)"
+                 (click)="openNewReservation(room, day)"
+                 class="h-100 w-100 empty-cell-hover">
+            </div>
+
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #reservationModal tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border border-2 border-dark-subtle shadow-lg rounded-3 overflow-hidden">
+
+      <div class="modal-header py-3 border-bottom border-2 text-white"
+           [ngClass]="isEditMode ? 'bg-primary border-primary' : 'bg-dark border-dark'">
+        <h6 class="modal-title fw-bold text-uppercase">
+          {{ isEditMode ? 'RESERVATION DETAILS & MANAGEMENT' : 'CREATE NEW RESERVATION' }}
+        </h6>
+        <button type="button" class="btn-close btn-close-white" (click)="modalInstance.hide()"></button>
+      </div>
+
+      <div class="modal-body p-0 bg-white">
+        <div class="row g-0">
+
+          <div class="col-md-5 p-4 border-end border-2 bg-light d-flex flex-column align-items-center">
+            <div class="avatar-circle shadow mb-3 d-flex align-items-center justify-content-center text-white fw-bold bg-primary border border-2 border-white"
+                 style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
+              {{ (resForm.get('firstName')?.value || '?').charAt(0).toUpperCase() }}
+            </div>
+            <h5 class="fw-bold text-dark mb-1 text-center text-uppercase">
+              {{ resForm.get('firstName')?.value }} {{ resForm.get('lastName')?.value }}
+            </h5>
+            <hr class="w-100 border-secondary">
+
+            <div class="w-100 p-3 border rounded bg-white shadow-sm small text-start">
+              <p class="mb-2"><strong>Room:</strong> {{ resForm.get('roomNumber')?.value }}</p>
+
+              <ng-container *ngIf="!isEditMode">
+                <p class="mb-2 text-primary"><strong>Username:</strong> {{ (resForm.get('firstName')?.value || '').toLowerCase() }}Guest</p>
+                <p class="mb-0 text-danger"><strong>Password:</strong> {{ (resForm.get('lastName')?.value || '').toLowerCase() }}123</p>
+              </ng-container>
+
+              <div *ngIf="isEditMode" class="mt-2 text-center">
+                <span class="badge w-100 py-2" [ngClass]="resForm.get('status')?.value === 'CANCELLED' ? 'bg-danger' : 'bg-success'">
+                  {{ resForm.get('status')?.value }}
+                </span>
+                <small class="text-muted d-block mt-2">ID: {{ resForm.get('id')?.value }}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7 p-4">
+            <form [formGroup]="resForm">
+
+              <div *ngIf="isEditMode" class="mb-3">
+                <label class="form-label small fw-bold text-uppercase text-primary">Reservation Status</label>
+                <select class="form-select border-secondary shadow-sm fw-bold" formControlName="status">
+                  <option value="PENDING">PENDING</option>
+                  <option value="CONFIRMED">CONFIRMED</option>
+                  <option value="CHECKED_IN">CHECKED_IN</option>
+                  <option value="CHECKED_OUT">CHECKED_OUT</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="NO_SHOW">NO_SHOW</option>
+                </select>
+              </div>
+
+              <div class="mb-4">
+                <h6 class="fw-bold small text-uppercase text-primary border-bottom pb-2 mb-3">Stay Information</h6>
+                <div class="row g-2 p-3 bg-light rounded border mx-0 shadow-sm small">
+                  <div class="col-6">
+                    <label class="form-label mb-0 fw-bold small">Check-In</label>
+                    <input type="date" class="form-control form-control-sm border-secondary shadow-sm" formControlName="checkInDate">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label mb-0 fw-bold small">Check-Out</label>
+                    <input type="date" class="form-control form-control-sm border-secondary shadow-sm" formControlName="checkOutDate">
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="fw-bold small text-uppercase text-secondary border-bottom pb-2 mb-3">Guest Details</h6>
+              <div class="row g-3 mb-4">
+                <div class="col-6">
+                  <label class="form-label small fw-bold">First Name</label>
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="firstName" [readonly]="isEditMode">
+                </div>
+                <div class="col-6">
+                  <label class="form-label small fw-bold">Last Name</label>
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="lastName" [readonly]="isEditMode">
+                </div>
+                <div class="col-12" *ngIf="!isEditMode">
+                  <label class="form-label small fw-bold">Identity / TC Number</label>
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="identityNumber">
+                </div>
+                <div class="col-12" *ngIf="!isEditMode">
+                  <label class="form-label small fw-bold">Phone Number</label>
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="phoneNumber">
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button *ngIf="!isEditMode" type="button" class="btn btn-success fw-bold shadow py-2 w-100 text-uppercase" (click)="onSave()">
+                  CONFIRM & CREATE
+                </button>
+
+                <div class="row g-2" *ngIf="isEditMode">
+                  <div class="col-6">
+                    <button type="button" class="btn btn-outline-info btn-sm px-3 rounded-pill shadow-sm fw-bold w-100 py-2 text-uppercase text-dark" (click)="onSave()">
+                      <i class="bi bi-pencil me-1"></i> UPDATE
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button *ngIf="isAdmin()" type="button" class="btn btn-outline-danger btn-sm px-3 rounded-pill shadow-sm fw-bold w-100 py-2 text-uppercase" (click)="deleteReservation()">
+                      <i class="bi bi-trash me-1"></i> DELETE
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

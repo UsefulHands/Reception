@@ -20,8 +20,8 @@ public class AuditLogController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<AuditLogDto>>> getAllLogs() {
-        List<AuditLogDto> logs = auditLogService.getAllLogs();
+    public ResponseEntity<ApiResponse<List<AuditLogDto>>> getLogs() {
+        List<AuditLogDto> logs = auditLogService.getLogs();
         return ResponseEntity.ok(ApiResponse.success(logs, "Audit logs retrieved successfully"));
     }
 }

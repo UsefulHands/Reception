@@ -38,7 +38,7 @@ public class AdminController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<AdminDto>>> getAdmins() {
-        List<AdminDto> admins = adminService.getAllAdmins();
+        List<AdminDto> admins = adminService.getAdmins();
         return ResponseEntity.ok(ApiResponse.success(admins, "Admins retrieved"));
     }
 

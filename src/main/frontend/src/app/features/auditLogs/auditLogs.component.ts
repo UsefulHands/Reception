@@ -1,7 +1,8 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import {environment} from '../../../environments/environment';
+import {AuditLogsModel} from './auditLogs.model';
+import {ApiResponse} from '../../core/models/api/ApiResponse';
+import {AuditLogService} from './auditLogs.service';
 
 @Component({
   selector: 'app-audit-logs',
@@ -11,19 +12,23 @@ import {environment} from '../../../environments/environment';
   styleUrls: ['./auditLogs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
-  logs: any[] = [];
-  private readonly API_URL = `${environment.apiUrl}/audit-logs`;
+  logs: AuditLogsModel[] = [];
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private auditLogService: AuditLogService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadLogs();
   }
 
   loadLogs() {
-    this.http.get<any>(this.API_URL).subscribe({
-      next: (res) => {
-        this.logs = res.data || [];
+    this.auditLogService.getLogs().subscribe({
+      next: (res: ApiResponse<AuditLogsModel[]>) => {
+        if (res.success && res.data) {
+          this.logs = [...res.data];
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Log loading error:', err)

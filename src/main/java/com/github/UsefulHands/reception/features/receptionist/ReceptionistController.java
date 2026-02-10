@@ -39,7 +39,7 @@ public class ReceptionistController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<ReceptionistDto>>> getReceptionists() {
-        List<ReceptionistDto> receptionists = receptionistService.getAllReceptionists();
+        List<ReceptionistDto> receptionists = receptionistService.getReceptionists();
         return ResponseEntity.ok(ApiResponse.success(receptionists, "Receptionists retrieved"));
     }
 

@@ -1,10 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { ReceptionistModel} from '../../core/models/receptionist/ReceptionistModel';
-import { ReceptionistRegistrationRequest} from '../../core/models/receptionist/ReceptionistRegisterationRequest';
-import {environment} from '../../../environments/environment';
+import { ReceptionistModel } from './receptionist.model';
+import { ReceptionistRegistrationRequest } from './receptionist.registration.request';
+import { ReceptionistService } from './receptionist.service';
+import {SHIFT_TYPES} from './shift.types';
+import {SelectedReceptionist} from './selected.receptionist';
+import {ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Component({
   selector: 'app-receptionist',
@@ -15,18 +17,20 @@ import {environment} from '../../../environments/environment';
 })
 export class ReceptionistComponent implements OnInit {
   receptionists: ReceptionistModel[] = [];
+  shiftTypes = SHIFT_TYPES;
   isEditMode = false;
-  private readonly API_URL = `${environment.apiUrl}/receptionists`;
+  selectedReceptionist: SelectedReceptionist = this.getEmptyReceptionist();
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private receptionistService: ReceptionistService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadReceptionists();
   }
 
-  selectedReceptionist: ReceptionistModel & { username?: string, password?: string } = this.getEmptyReceptionist();
-
-  getEmptyReceptionist() {
+  getEmptyReceptionist(): SelectedReceptionist {
     return {
       firstName: '',
       lastName: '',
@@ -36,73 +40,88 @@ export class ReceptionistComponent implements OnInit {
     };
   }
 
-  loadReceptionists() {
-    this.http.get<any>(this.API_URL).subscribe({
-      next: (res) => {
-
-        this.receptionists = res.data ? [...res.data] : [];
-        this.cdr.detectChanges();
+  loadReceptionists(): void {
+    this.receptionistService.getAll().subscribe({
+      next: (res: ApiResponse<ReceptionistModel[]>) => {
+        if (res.success) {
+          this.receptionists = res.data ? [...res.data] : [];
+          this.cdr.detectChanges();
+        }
       },
-      error: (err) => console.error('Loading error:', err)
+      error: (err) => console.error(err)
     });
   }
 
-  saveReceptionist() {
+  saveReceptionist(): void {
     if (this.isEditMode && this.selectedReceptionist.id) {
-      // UPDATE (PUT)
-      const updatePayload: ReceptionistModel = {
-        firstName: this.selectedReceptionist.firstName,
-        lastName: this.selectedReceptionist.lastName,
-        shiftType: this.selectedReceptionist.shiftType,
-      };
-
-      if(confirm("Are you sure you want to update this receptionist?")) {
-        this.http.put<any>(`${this.API_URL}/${this.selectedReceptionist.id}`, updatePayload).subscribe({
-          next: (res) => {
-            console.log('Update successful:', res.message);
-            this.resetForm();
-            this.loadReceptionists();
-          },
-          error: (err) => console.error('Update error:', err)
-        });
-      }
+      this.handleUpdate();
     } else {
-      // CREATE (POST)
-      const registrationPayload: ReceptionistRegistrationRequest = {
-        receptionistDetails: {
-          firstName: this.selectedReceptionist.firstName,
-          lastName: this.selectedReceptionist.lastName,
-          shiftType: this.selectedReceptionist.shiftType
-        },
-        username: this.selectedReceptionist.username || '',
-        password: this.selectedReceptionist.password || ''
-      };
-
-      if(confirm("Are you sure you want to add this receptionist?")) {
-        this.http.post<any>(this.API_URL, registrationPayload).subscribe({
-          next: (res) => {
-            console.log('Registration successful:', res.message);
-            this.loadReceptionists();
-            this.resetForm();
-          },
-          error: (err) => console.error('Save error:', err)
-        });
-      }
+      this.handleCreate();
     }
   }
 
-  editReceptionist(receptionist: ReceptionistModel) {
+  private handleUpdate(): void {
+    const updatePayload: ReceptionistModel = {
+      id: this.selectedReceptionist.id,
+      firstName: this.selectedReceptionist.firstName,
+      lastName: this.selectedReceptionist.lastName,
+      shiftType: this.selectedReceptionist.shiftType,
+      userId: this.selectedReceptionist.userId
+    };
+
+    if (confirm("Update this receptionist?")) {
+      this.receptionistService.update(updatePayload.id!, updatePayload).subscribe({
+        next: (res) => {
+          alert(res.message);
+          this.resetForm();
+          this.loadReceptionists();
+        },
+        error: (err) => alert(err.error?.message)
+      });
+    }
+  }
+
+  private handleCreate(): void {
+    const registrationPayload: ReceptionistRegistrationRequest = {
+      receptionistDetails: {
+        firstName: this.selectedReceptionist.firstName,
+        lastName: this.selectedReceptionist.lastName,
+        shiftType: this.selectedReceptionist.shiftType
+      },
+      username: this.selectedReceptionist.username || '',
+      password: this.selectedReceptionist.password || ''
+    };
+
+    if (confirm("Add this receptionist?")) {
+      this.receptionistService.create(registrationPayload).subscribe({
+        next: (res) => {
+          alert(res.message);
+          this.loadReceptionists();
+          this.resetForm();
+        },
+        error: (err) => alert(err.error?.message)
+      });
+    }
+  }
+
+  editReceptionist(receptionist: ReceptionistModel): void {
     this.selectedReceptionist = { ...receptionist };
     this.isEditMode = true;
   }
 
-  deleteReceptionist(id: number) {
-    if (confirm('Are you sure you want to delete this receptionist?')) {
-      this.http.delete(`${this.API_URL}/${id}`).subscribe(() => this.loadReceptionists());
+  deleteReceptionist(id: number): void {
+    if (confirm('Are you sure?')) {
+      this.receptionistService.delete(id).subscribe({
+        next: (res) => {
+          alert(res.message);
+          this.loadReceptionists();
+        },
+        error: (err) => alert(err.error?.message)
+      });
     }
   }
 
-  resetForm() {
+  resetForm(): void {
     this.selectedReceptionist = this.getEmptyReceptionist();
     this.isEditMode = false;
     this.cdr.detectChanges();
