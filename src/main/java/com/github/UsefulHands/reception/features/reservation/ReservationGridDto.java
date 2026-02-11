@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record ReservationGridDto(
         Long id,
+        Long roomId,
         LocalDate checkInDate,
         LocalDate checkOutDate,
         String status,

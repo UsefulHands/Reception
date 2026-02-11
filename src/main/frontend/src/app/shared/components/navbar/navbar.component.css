@@ -3,7 +3,6 @@
   z-index: 1050;
 }
 
-/* Logo Stili */
 .brand-box {
   width: 32px;
   height: 32px;
@@ -16,7 +15,6 @@
   font-weight: 800;
 }
 
-/* Linklerin Alt Çizgi Efekti */
 .nav-link {
   font-weight: 500;
   color: #555;
@@ -38,7 +36,6 @@
   border-radius: 2px;
 }
 
-/* Dropdown Animasyonu */
 .animate-slide-in {
   animation: slideIn 0.2s ease-out;
 }
@@ -57,7 +54,6 @@
   font-size: 0.65rem;
 }
 
-/* Navbar Mobildeyken Arka Planı Doldur */
 @media (max-width: 991px) {
   .navbar-nav {
     padding: 1rem 0;

@@ -4,7 +4,8 @@ export interface ReservationModel {
   id?: number;
   roomId: number;
   guestId?: number;
-  guestFullName?: string;
+  guestFirstName?: string;
+  guestLastName?: string;
   roomNumber?: string;
   checkInDate: string;
   checkOutDate: string;

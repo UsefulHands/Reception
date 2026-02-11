@@ -11,14 +11,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Statik dosyaları (JS, CSS) resources/static altında ara
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/");
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // Senin mevcut regex yönlendirmen (Angular router için harika)
         registry.addViewController("/{path:[^\\.]*}")
                 .setViewName("forward:/index.html");
     }

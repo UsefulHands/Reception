@@ -83,7 +83,6 @@ public class ReservationService {
                 .room(room)
                 .checkInDate(request.checkInDate())
                 .checkOutDate(request.checkOutDate())
-                // SABİT YERİNE BURAYI GÜNCELLEDİK:
                 .status(request.status() != null ? request.status() : ReservationStatus.CONFIRMED)
                 .totalPrice(totalPrice)
                 .amountPaid(BigDecimal.ZERO)
@@ -94,7 +93,7 @@ public class ReservationService {
 
         auditLogService.log("RESERVATION_CREATE", getSafeActor(),
                 "Room: " + room.getRoomNumber() + " reserved for " + guest.getFirstName() +
-                        " | Status: " + res.getStatus()); // Loga statüyü ekledik
+                        " | Status: " + res.getStatus());
 
         return reservationMapper.toDto(saved);
     }
@@ -122,12 +121,10 @@ public class ReservationService {
             throw new DataIntegrityException("Room is not available in this date!");
         }
 
-        // GÜNCELLEMELER
         res.setRoom(room);
         res.setCheckInDate(request.checkInDate());
         res.setCheckOutDate(request.checkOutDate());
 
-        // STATÜ GÜNCELLEMESİ BURAYA GELDİ:
         if (request.status() != null) {
             res.setStatus(request.status());
         }
@@ -138,7 +135,6 @@ public class ReservationService {
 
         ReservationEntity updated = reservationRepository.save(res);
 
-        // Audit Log'u daha detaylı yapalım ki takip kolay olsun
         auditLogService.log("RESERVATION_UPDATE", getSafeActor(),
                 "Updated Res ID: " + id + " | Room: " + room.getRoomNumber() + " | Status: " + updated.getStatus());
 
@@ -201,6 +197,7 @@ public class ReservationService {
         return reservationRepository.findAllByDateRange(start, end).stream()
                 .map(res -> new ReservationGridDto(
                         res.getId(),
+                        res.getRoom().getId(),
                         res.getCheckInDate(),
                         res.getCheckOutDate(),
                         res.getStatus().name(),
@@ -224,6 +221,10 @@ public class ReservationService {
 
                     if (res.getGuest() != null) {
                         dto.setGuestFullName(res.getGuest().getFirstName() + " " + res.getGuest().getLastName());
+                        dto.setGuestFirstName(res.getGuest().getFirstName());
+                        dto.setGuestLastName(res.getGuest().getLastName());
+                        dto.setPhoneNumber(res.getGuest().getPhoneNumber());
+                        dto.setIdentityNumber(res.getGuest().getIdentityNumber());
                     }
                     if (res.getRoom() != null) {
                         dto.setRoomNumber(res.getRoom().getRoomNumber());

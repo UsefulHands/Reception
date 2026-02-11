@@ -24,6 +24,11 @@ public class ReservationDto {
     @NotNull(message = "Guest ID is required")
     private Long guestId;
 
+    private String guestFirstName;
+    private String guestLastName;
+    private String phoneNumber;
+    private String identityNumber;
+
     // Grid ekranında ID yerine direkt isim görmek için pratik alanlar
     private String guestFullName;
     private String roomNumber;

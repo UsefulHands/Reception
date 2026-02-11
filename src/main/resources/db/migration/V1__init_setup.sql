@@ -129,7 +129,8 @@ VALUES ('101', 'SINGLE', 1, 1, 18.0, 'GARDEN', 'Cozy single room with garden vie
 
 INSERT INTO room_bed_types (room_id, bed_type) VALUES (1, 'QUEEN');
 INSERT INTO room_amenities (room_id, amenity) VALUES (1, 'WIFI'), (1, 'TV'), (1, 'SAFE');
-INSERT INTO room_images (room_id, image_url) VALUES (1, 'https://hotel.com/img/101.jpg');
+INSERT INTO room_images (room_id, image_url) VALUES (1, 'https://plus.unsplash.com/premium_photo-1661964402307-02267d1423f5?q=80&w=1546&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+                                                    (1, 'https://images.unsplash.com/photo-1568495248636-6432b97bd949?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
 
 
 INSERT INTO rooms (room_number, type, beds, max_guests, area_sqm, view, description, price, available, smoking_allowed, floor, created_by)
@@ -137,7 +138,8 @@ VALUES ('304', 'DELUXE', 2, 4, 45.0, 'CITY', 'Large deluxe room for families', 2
 
 INSERT INTO room_bed_types (room_id, bed_type) VALUES (2, 'KING'), (2, 'KING');
 INSERT INTO room_amenities (room_id, amenity) VALUES (2, 'WIFI'), (2, 'COFFEE_MACHINE'), (2, 'MINIBAR'), (2, 'BALCONY');
-INSERT INTO room_images (room_id, image_url) VALUES (2, 'https://hotel.com/img/304-1.jpg'), (2, 'https://hotel.com/img/304-2.jpg');
+INSERT INTO room_images (room_id, image_url) VALUES (2, 'https://plus.unsplash.com/premium_photo-1661964402307-02267d1423f5?q=80&w=1546&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+                                                    (2, 'https://images.unsplash.com/photo-1568495248636-6432b97bd949?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
 
 -- pass: 'admin123'
 INSERT INTO users (username, password, role, created_at, created_by)

@@ -1,4 +1,3 @@
-/* Misafir Avatar Kutusu */
 .avatar-guest {
   width: 40px;
   height: 40px;
@@ -6,7 +5,6 @@
   transition: all 0.3s ease;
 }
 
-/* Tablo Satırı Hover Efekti */
 .hover-row {
   transition: background-color 0.2s ease, transform 0.2s ease;
   cursor: default;
@@ -14,23 +12,20 @@
 
 .hover-row:hover {
   background-color: #f8faff !important;
-  transform: translateX(5px); /* Hafifçe sağa kayma efekti */
+  transform: translateX(5px);
 }
 
-/* Form Bölüm Başlıkları */
 .section-title small {
   letter-spacing: 1px;
   font-size: 0.7rem;
 }
 
-/* Input Odaklanma Efekti */
 .form-control:focus {
   background-color: #fff !important;
   border-color: #0d6efd !important;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1) !important;
 }
 
-/* Badge ve Buton Yumuşatması */
 .badge {
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -41,7 +36,6 @@
   font-weight: 600;
 }
 
-/* Sticky Formun Mobilde Kaybolmaması İçin */
 @media (max-width: 991.98px) {
   .sticky-top {
     position: relative !important;

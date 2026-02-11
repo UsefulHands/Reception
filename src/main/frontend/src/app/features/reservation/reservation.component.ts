@@ -1,11 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ReservationService } from './reservation.service';
-import {ReservationGridResponse} from './reservation.grid.response';
-import {ReservationStatus} from './reservation.status';
-import {ReservationModel} from './reservation.model';
+import { ReservationGridResponse } from './reservation.grid.response';
+import { ReservationStatus } from './reservation.status';
+import { ReservationModel } from './reservation.model';
 
 declare var bootstrap: any;
 
@@ -39,10 +39,10 @@ export class ReservationComponent implements OnInit, AfterViewInit {
       roomNumber: [''],
       checkInDate: ['', Validators.required],
       checkOutDate: ['', Validators.required],
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      identityNumber: ['', Validators.required],
+      guestFirstName: ['', Validators.required],
+      guestLastName: ['', Validators.required],
+      phoneNumber: [''],
+      identityNumber: [''],
       status: [ReservationStatus.CONFIRMED]
     });
   }
@@ -103,11 +103,39 @@ export class ReservationComponent implements OnInit, AfterViewInit {
     );
   }
 
-  calculateWidth(checkIn: string, checkOut: string): string {
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return `${((diffDays + 1) * 45) - 8}px`;
+  private getCellWidth(): number {
+    const cell = document.querySelector('.cell-square') as HTMLElement;
+    return cell ? cell.getBoundingClientRect().width : 45;
+  }
+
+  calculateResStyle(checkIn: string, checkOut: string): any {
+    const d1 = new Date(checkIn);
+    const d2 = new Date(checkOut);
+    d1.setHours(0,0,0,0);
+    d2.setHours(0,0,0,0);
+
+    const diffDays = Math.max(
+      Math.round((d2.getTime() - d1.getTime()) / 86400000),
+      1
+    );
+
+    const cellWidth = this.getCellWidth();
+
+    const startOffset = cellWidth * 0.6;
+    const endOffset = cellWidth * 0.4;
+
+    const width = (diffDays * cellWidth) - startOffset + endOffset;
+
+    return {
+      width: `${width}px`,
+      left: `${startOffset}px`,
+      position: 'absolute'
+    };
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.cdr.detectChanges();
   }
 
   openNewReservation(room: any, day: number): void {
@@ -118,31 +146,33 @@ export class ReservationComponent implements OnInit, AfterViewInit {
       roomNumber: room.roomNumber,
       checkInDate: dateStr,
       checkOutDate: dateStr,
-      status: ReservationStatus.CONFIRMED
+      status: ReservationStatus.CONFIRMED,
+      guestFirstName: '',
+      guestLastName: ''
     });
+    this.cdr.detectChanges();
     this.modalInstance.show();
   }
 
   openEditReservation(reservationId: number): void {
-    if (reservationId === undefined) return;
-
+    if (!reservationId) return;
     this.isEditMode = true;
     this.reservationService.getById(reservationId).subscribe({
       next: (res) => {
         const data = res.data;
-        const nameParts = data.guestFullName ? data.guestFullName.split(' ') : ['', ''];
         this.resForm.patchValue({
           id: data.id,
           roomId: data.roomId,
           roomNumber: data.roomNumber,
           checkInDate: data.checkInDate,
           checkOutDate: data.checkOutDate,
-          firstName: nameParts[0],
-          lastName: nameParts.slice(1).join(' '),
-          phoneNumber: data.phoneNumber || 'PROTECTED',
-          identityNumber: data.identityNumber || 'PROTECTED',
+          guestFirstName: data.guestFirstName,
+          guestLastName: data.guestLastName,
+          phoneNumber: data.phoneNumber,
+          identityNumber: data.identityNumber,
           status: data.status
         });
+        this.cdr.detectChanges();
         this.modalInstance.show();
       }
     });
@@ -150,23 +180,13 @@ export class ReservationComponent implements OnInit, AfterViewInit {
 
   onSave(): void {
     if (this.resForm.invalid) return;
-
-    if (this.isEditMode) {
-      this.handleUpdate();
-    } else {
-      this.handleCreate();
-    }
+    this.isEditMode ? this.handleUpdate() : this.handleCreate();
   }
 
   private handleUpdate(): void {
-    const payload = {
-      roomId: this.resForm.value.roomId,
-      checkInDate: this.resForm.value.checkInDate,
-      checkOutDate: this.resForm.value.checkOutDate,
-      status: this.resForm.value.status
-    };
+    const payload = { ...this.resForm.value };
     if (confirm("Update reservation?")) {
-      this.reservationService.update(this.resForm.value.id, payload).subscribe({
+      this.reservationService.update(payload.id, payload).subscribe({
         next: (res) => this.handleSuccess(res.message)
       });
     }

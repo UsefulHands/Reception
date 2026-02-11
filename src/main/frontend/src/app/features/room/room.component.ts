@@ -169,7 +169,7 @@ export class RoomComponent implements OnInit {
       roomNumber: '', type: 'SINGLE', status: 'CLEAN', bedTypes: [],
       beds: 1, maxGuests: 2, areaSqm: 25, view: 'CITY',
       description: '', price: 100, available: true,
-      smokingAllowed: false, floor: 1, amenities: [], images: []
+      smokingAllowed: false, floor: 1, amenities: [], images: ['https://images.unsplash.com/photo-1568495248636-6432b97bd949?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D']
     };
   }
 
@@ -189,5 +189,37 @@ export class RoomComponent implements OnInit {
       const modal = bootstrap.Modal.getInstance(el);
       if (modal) modal.hide();
     }
+  }
+
+  currentImageIndex: number = 0;
+
+  prevImage() {
+    if (!this.detailRoom?.images) return;
+
+    if (this.currentImageIndex > 0) {
+      this.currentImageIndex--;
+    } else {
+      this.currentImageIndex = this.detailRoom.images.length - 1;
+    }
+  }
+
+  nextImage() {
+    if (!this.detailRoom?.images) return;
+
+    if (this.currentImageIndex < this.detailRoom.images.length - 1) {
+      this.currentImageIndex++;
+    } else {
+      this.currentImageIndex = 0;
+    }
+  }
+
+  isPreviewOpen: boolean = false;
+
+  openPreview() {
+    this.isPreviewOpen = true;
+  }
+
+  closePreview() {
+    this.isPreviewOpen = false;
   }
 }

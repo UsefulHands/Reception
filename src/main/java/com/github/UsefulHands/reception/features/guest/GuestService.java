@@ -65,7 +65,6 @@ public class GuestService {
             GuestEntity updatedGuest = guestRepository.saveAndFlush(guestEntity);
             return guestMapper.toDto(updatedGuest);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // identity_number veya phone_number UNIQUE kısıtlaması için
             throw new com.github.UsefulHands.reception.common.exception.DataIntegrityException(
                     "Identity number or phone number already in use!");
         }
@@ -113,36 +112,28 @@ public class GuestService {
 
     @Transactional
     public GuestDto updateMyProfile(Long userId, GuestProfileUpdateRequest request) {
-        // 1. Kullanıcıyı bul (UserEntity üzerinden Guest'e erişim)
         GuestEntity guest = guestRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Guest profile not found for user ID: " + userId));
 
         if (request.getCurrentPassword() != null && !request.getCurrentPassword().isBlank()) {
 
-            // Mevcut şifre doğrulaması
             if (!passwordEncoder.matches(request.getCurrentPassword(), guest.getUser().getPassword())) {
                 throw new BadCredentialsException("Current password is incorrect!");
             }
 
-            // Yeni şifre kontrolü ve setlenmesi
             if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
                 guest.getUser().setPassword(passwordEncoder.encode(request.getNewPassword()));
-                // Audit Log: Şifre değişti notu düşülebilir
             }
         }
 
-        // 3. Kişisel bilgilerin güncellenmesi
         guest.setFirstName(request.getFirstName());
         guest.setLastName(request.getLastName());
         guest.setPhoneNumber(request.getPhoneNumber());
         guest.setIdentityNumber(request.getIdentityNumber());
 
-        // 4. Kayıt ve DTO dönüşü
         GuestEntity updatedGuest = guestRepository.save(guest);
 
-        // 5. AUDIT LOG (Buraya dikkat!)
         log.info("User {} updated their profile details.", userId);
-        // auditLogService.log(userId, "UPDATE_PROFILE", "User updated personal details.");
 
         return guestMapper.toDto(updatedGuest);
     }

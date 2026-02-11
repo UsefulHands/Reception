@@ -15,6 +15,10 @@ public interface ReservationMapper {
     @Mapping(target = "roomId", source = "room.id")
     @Mapping(target = "guestId", source = "guest.id")
     @Mapping(target = "roomNumber", source = "room.roomNumber")
+    @Mapping(target = "guestFirstName", source = "guest.firstName")
+    @Mapping(target = "guestLastName", source = "guest.lastName")
+    @Mapping(target = "phoneNumber", source = "guest.phoneNumber")
+    @Mapping(target = "identityNumber", source = "guest.identityNumber")
     @Mapping(target = "guestFullName", expression = "java(entity.getGuest().getFirstName() + \" \" + entity.getGuest().getLastName())")
     @Mapping(target = "balance", expression = "java(entity.getTotalPrice().subtract(entity.getAmountPaid() != null ? entity.getAmountPaid() : java.math.BigDecimal.ZERO))")
     ReservationDto toDto(ReservationEntity entity);

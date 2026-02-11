@@ -17,10 +17,9 @@
 }
 
 .hero-section:hover .hero-bg {
-  transform: scale(1.1); /* Hafif yakınlaşma efekti */
+  transform: scale(1.1);
 }
 
-/* Luxury Buttons */
 .btn-luxury-outline {
   border: 1px solid rgba(255,255,255,0.5);
   color: white;
@@ -45,7 +44,6 @@
   color: white;
 }
 
-/* Mouse Scroll Animation */
 .scroll-indicator {
   position: absolute;
   bottom: 30px;
@@ -78,7 +76,6 @@
   100% { opacity: 0; transform: translate(-50%, 15px); }
 }
 
-/* Image Stack Effects */
 .img-reveal {
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
@@ -95,4 +92,11 @@
   border-top: 2px solid #0d6efd;
   border-right: 2px solid #0d6efd;
   z-index: -1;
+}
+
+.hero-bg {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)),
+  url('./hotel_california.jpg') center center / cover no-repeat;
 }

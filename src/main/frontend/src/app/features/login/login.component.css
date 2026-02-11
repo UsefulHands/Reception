@@ -4,7 +4,6 @@
   overflow: hidden;
 }
 
-/* Arka Plandaki Blur Efektleri */
 .bg-circle-1, .bg-circle-2 {
   position: absolute;
   border-radius: 50%;
@@ -34,14 +33,12 @@
   height: 70px;
 }
 
-/* Floating label odaklanma rengi */
 .form-control:focus {
   border-color: #0d6efd;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
   background-color: #fff !important;
 }
 
-/* Fade-in Animasyonu */
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out;
 }

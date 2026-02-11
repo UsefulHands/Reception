@@ -1,5 +1,4 @@
 .footer {
-  /* Sayfa içeriği az olsa bile footer'ı en alta yapıştırır */
   border-top: 1px solid #eee !important;
 }
 
@@ -11,7 +10,6 @@
   letter-spacing: 1.5px;
 }
 
-/* Mobilde üst üste binmesin diye */
 @media (max-width: 768px) {
   .footer .row {
     flex-direction: column;

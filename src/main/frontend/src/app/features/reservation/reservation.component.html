@@ -17,27 +17,40 @@
       <table class="table table-bordered mb-0 border-0">
         <thead class="table-dark">
         <tr>
-          <th class="sticky-column bg-dark text-center py-3 border-bottom-0" style="min-width: 120px; z-index: 100;">ROOM</th>
-          <th *ngFor="let day of daysInMonth" class="text-center small py-3 cell-square border-bottom-0">{{ day }}</th>
+          <th class="room-numbers sticky-column bg-dark text-center py-3 border-bottom-0" style="z-index: 120;">
+            ROOM
+          </th>
+          <th *ngFor="let day of daysInMonth"
+              class="text-center small py-3 cell-square border-bottom-0">
+            {{ day }}
+          </th>
         </tr>
         </thead>
         <tbody>
         <tr *ngFor="let room of rooms" class="hover-row">
-          <td class="sticky-column fw-bold bg-light text-center align-middle border-end">
-            <span class="badge bg-dark px-3 py-2 shadow-sm w-100">{{ room.roomNumber }}</span>
+          <td class="room-numbers sticky-column fw-bold bg-light text-center align-middle border-end">
+          <span class="badge bg-dark px-3 py-2 shadow-sm w-100">
+            {{ room.roomNumber }}
+          </span>
           </td>
 
-          <td *ngFor="let day of daysInMonth" class="p-0 position-relative cell-square align-middle">
+          <td *ngFor="let day of daysInMonth"
+              class="p-0 position-relative cell-square align-middle">
 
             <ng-container *ngIf="getReservationStart(room.id, day) as res">
               <div (click)="openEditReservation(res.id!)"
                    class="res-cylinder shadow-sm"
-                   [ngClass]="res.status?.toLowerCase()"
-                   [style.width]="calculateWidth(res.checkInDate, res.checkOutDate)">
+                   [ngClass]="res.status.toLowerCase()"
+                   [ngStyle]="calculateResStyle(res.checkInDate, res.checkOutDate)">
+
+              <span class="res-label">
+                {{ res.guestFirstName }} {{ res.guestLastName }}
+              </span>
+
                 <div class="res-info-tooltip shadow-lg">
                   <i class="bi bi-person-fill me-1"></i>
-                  {{ res.guestFullName || (res.guestFullName) || 'Unknown Guest' }}
-                  <small class="ms-1">({{ res.status || 'N/A' }})</small>
+                  {{ res.guestFirstName }} {{ res.guestLastName }}
+                  <small class="ms-1">({{ res.status }})</small>
                 </div>
               </div>
             </ng-container>
@@ -73,10 +86,10 @@
           <div class="col-md-5 p-4 border-end border-2 bg-light d-flex flex-column align-items-center">
             <div class="avatar-circle shadow mb-3 d-flex align-items-center justify-content-center text-white fw-bold bg-primary border border-2 border-white"
                  style="width: 80px; height: 80px; border-radius: 50%; font-size: 2rem;">
-              {{ (resForm.get('firstName')?.value || '?').charAt(0).toUpperCase() }}
+              {{ (resForm.get('guestFirstName')?.value || '?').charAt(0).toUpperCase() }}
             </div>
             <h5 class="fw-bold text-dark mb-1 text-center text-uppercase">
-              {{ resForm.get('firstName')?.value }} {{ resForm.get('lastName')?.value }}
+              {{ resForm.get('guestFirstName')?.value }} {{ resForm.get('guestLastName')?.value }}
             </h5>
             <hr class="w-100 border-secondary">
 
@@ -84,8 +97,8 @@
               <p class="mb-2"><strong>Room:</strong> {{ resForm.get('roomNumber')?.value }}</p>
 
               <ng-container *ngIf="!isEditMode">
-                <p class="mb-2 text-primary"><strong>Username:</strong> {{ (resForm.get('firstName')?.value || '').toLowerCase() }}Guest</p>
-                <p class="mb-0 text-danger"><strong>Password:</strong> {{ (resForm.get('lastName')?.value || '').toLowerCase() }}123</p>
+                <p class="mb-2 text-primary"><strong>Username:</strong> {{ (resForm.get('guestFirstName')?.value || '').toLowerCase() }}Guest</p>
+                <p class="mb-0 text-danger"><strong>Password:</strong> {{ (resForm.get('guestLastName')?.value || '').toLowerCase() }}123</p>
               </ng-container>
 
               <div *ngIf="isEditMode" class="mt-2 text-center">
@@ -130,11 +143,11 @@
               <div class="row g-3 mb-4">
                 <div class="col-6">
                   <label class="form-label small fw-bold">First Name</label>
-                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="firstName" [readonly]="isEditMode">
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="guestFirstName" [readonly]="isEditMode">
                 </div>
                 <div class="col-6">
                   <label class="form-label small fw-bold">Last Name</label>
-                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="lastName" [readonly]="isEditMode">
+                  <input type="text" class="form-control border-secondary shadow-sm" formControlName="guestLastName" [readonly]="isEditMode">
                 </div>
                 <div class="col-12" *ngIf="!isEditMode">
                   <label class="form-label small fw-bold">Identity / TC Number</label>
