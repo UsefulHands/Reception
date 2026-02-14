@@ -33,6 +33,8 @@ export class RoomComponent implements OnInit {
   bedTypeOptions = ROOM_CONSTANTS.bedTypes;
   amenitiesList = ROOM_CONSTANTS.amenities;
 
+  minDate: Date = new Date();
+
   constructor(
     private roomService: RoomService,
     public authService: AuthService,
@@ -60,7 +62,30 @@ export class RoomComponent implements OnInit {
 
   confirmQuickReservation(): void {
     if (!this.reservationDates.checkIn || !this.reservationDates.checkOut) {
-      alert("Please select dates.");
+      alert("Please select both check-in and check-out dates.");
+      return;
+    }
+
+    const checkIn = new Date(this.reservationDates.checkIn);
+    const checkOut = new Date(this.reservationDates.checkOut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (checkIn < today) {
+      alert('Check-in date cannot be in the past. Please select a valid date.');
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      alert('Check-out date must be at least 1 day after check-in date. Please adjust your dates.');
+      return;
+    }
+
+    const diffTime = checkOut.getTime() - checkIn.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 1) {
+      alert('Minimum stay is 1 night. Please select valid dates.');
       return;
     }
 
@@ -71,6 +96,10 @@ export class RoomComponent implements OnInit {
       checkOutDate: this.reservationDates.checkOut,
       totalPrice: this.calculateTotalPrice()
     };
+
+    if (!confirm(`Confirm reservation for ${diffDays} night(s)?\nTotal: $${this.calculateTotalPrice()}`)) {
+      return;
+    }
 
     this.reservationService.setTemporaryBooking(reservationRequest);
     this.closeModal('quickReserveModal');
@@ -134,6 +163,7 @@ export class RoomComponent implements OnInit {
 
   viewDetails(room: RoomModel): void {
     this.detailRoom = room;
+    this.currentImageIndex = 0;
     this.openModal('roomDetailModal');
   }
 
@@ -174,6 +204,13 @@ export class RoomComponent implements OnInit {
   }
 
   openReservationModal(): void {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    this.reservationDates.checkIn = this.formatDate(today);
+    this.reservationDates.checkOut = this.formatDate(tomorrow);
+
     this.closeModal('roomDetailModal');
     this.openModal('quickReserveModal');
   }
@@ -221,5 +258,15 @@ export class RoomComponent implements OnInit {
 
   closePreview() {
     this.isPreviewOpen = false;
+  }
+
+  formatDate(date: Date): string {
+    return date.toISOString().substring(0, 10);
+  }
+
+  onCheckInChange(): void {
+  }
+
+  onCheckOutChange(): void {
   }
 }

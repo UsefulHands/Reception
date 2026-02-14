@@ -39,10 +39,16 @@ public class ReservationService {
 
     @Transactional
     public ReservationDto createWithNewUser(ReservationCreateRequest request) {
+        validateReservationDates(request.checkInDate(), request.checkOutDate());
+
+        RoomEntity room = roomRepository.findById(request.roomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        validateRoomStatus(room);
         checkRoomAvailability(request.roomId(), request.checkInDate(), request.checkOutDate());
 
-        String username = request.firstName() + "Guest";
-        String password = request.firstName().toLowerCase() + "123";
+        String username = request.firstNameOrEmpty().toLowerCase() + "Guest";
+        String password = request.lastNameOrEmpty().toLowerCase() + "123";
         UserEntity user = userService.createAccount(username, password, "ROLE_GUEST");
 
         GuestEntity guest = guestRepository.findByUserId(user.getId())
@@ -51,8 +57,8 @@ public class ReservationService {
                     newGuest.setUser(user);
                     return newGuest;
                 });
-        guest.setFirstName(request.firstName());
-        guest.setLastName(request.lastName());
+        guest.setFirstName(request.guestFirstName());
+        guest.setLastName(request.guestLastName());
         guest.setPhoneNumber(request.phoneNumber());
         guest.setIdentityNumber(request.identityNumber());
         guest = guestRepository.save(guest);
@@ -65,9 +71,53 @@ public class ReservationService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         GuestEntity guest = guestService.findGuestByUserUsername(username);
 
+        validateReservationDates(request.checkInDate(), request.checkOutDate());
+
+        RoomEntity room = roomRepository.findById(request.roomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        validateRoomStatus(room);
         checkRoomAvailability(request.roomId(), request.checkInDate(), request.checkOutDate());
 
         return createReservationInternal(guest, request);
+    }
+
+    private void validateReservationDates(LocalDate checkIn, LocalDate checkOut) {
+        if (checkIn == null || checkOut == null) {
+            throw new DataIntegrityException("Check-in and check-out dates are required");
+        }
+
+        if (checkIn.isAfter(checkOut) || checkIn.isEqual(checkOut)) {
+            throw new DataIntegrityException("Check-out date must be at least 1 day after check-in date");
+        }
+
+        long daysBetween = ChronoUnit.DAYS.between(checkIn, checkOut);
+        if (daysBetween < 1) {
+            throw new DataIntegrityException("Minimum stay is 1 night");
+        }
+
+        if (checkIn.isBefore(LocalDate.now())) {
+            throw new DataIntegrityException("Check-in date cannot be in the past");
+        }
+
+        if (checkIn.isAfter(LocalDate.now().plusYears(1))) {
+            throw new DataIntegrityException("Cannot book more than 1 year in advance");
+        }
+
+        if (daysBetween > 30) {
+            throw new DataIntegrityException("Maximum stay duration is 30 nights");
+        }
+    }
+
+    private void validateRoomStatus(RoomEntity room) {
+        if (room.getStatus() == null) {
+            return;
+        }
+
+        String status = room.getStatus().toString().toUpperCase();
+        if ("MAINTENANCE".equals(status) || "OUT_OF_SERVICE".equals(status)) {
+            throw new DataIntegrityException("Room is not available for booking");
+        }
     }
 
     private ReservationDto createReservationInternal(GuestEntity guest, ReservationCreateRequest request) {
@@ -93,7 +143,7 @@ public class ReservationService {
 
         auditLogService.log("RESERVATION_CREATE", getSafeActor(),
                 "Room: " + room.getRoomNumber() + " reserved for " + guest.getFirstName() +
-                        " | Status: " + res.getStatus());
+                        " | Status: " + res.getStatus() + " | Dates: " + request.checkInDate() + " to " + request.checkOutDate());
 
         return reservationMapper.toDto(saved);
     }
@@ -101,6 +151,8 @@ public class ReservationService {
     @Transactional
     public ReservationDto updateReservation(Long id, ReservationUpdateRequest request) {
         log.info("Updating reservation ID: {}", id);
+
+        validateReservationDates(request.checkInDate(), request.checkOutDate());
 
         ReservationEntity res = reservationRepository.findById(id)
                 .filter(r -> !r.isDeleted())
@@ -111,6 +163,8 @@ public class ReservationService {
             room = roomRepository.findById(request.roomId())
                     .filter(r -> !r.isDeleted())
                     .orElseThrow(() -> new ResourceNotFoundException("New room not found or deleted"));
+
+            validateRoomStatus(room);
         }
 
         boolean isOverlapping = reservationRepository.findOverlappingReservations(
@@ -118,16 +172,17 @@ public class ReservationService {
         ).stream().anyMatch(r -> !r.getId().equals(id));
 
         if (isOverlapping) {
-            throw new DataIntegrityException("Room is not available in this date!");
+            throw new DataIntegrityException("Room is not available for the selected dates. Please choose different dates.");
+        }
+
+        if (request.status() != null) {
+            validateStatusTransition(res.getStatus(), request.status());
+            res.setStatus(request.status());
         }
 
         res.setRoom(room);
         res.setCheckInDate(request.checkInDate());
         res.setCheckOutDate(request.checkOutDate());
-
-        if (request.status() != null) {
-            res.setStatus(request.status());
-        }
 
         long days = ChronoUnit.DAYS.between(request.checkInDate(), request.checkOutDate());
         if (days <= 0) days = 1;
@@ -141,10 +196,32 @@ public class ReservationService {
         return reservationMapper.toDto(updated);
     }
 
+    private void validateStatusTransition(ReservationStatus currentStatus, ReservationStatus newStatus) {
+        if (currentStatus == newStatus) {
+            return;
+        }
+
+        boolean isValidTransition = switch (currentStatus) {
+            case PENDING -> newStatus == ReservationStatus.CONFIRMED ||
+                    newStatus == ReservationStatus.CANCELLED;
+            case CONFIRMED -> newStatus == ReservationStatus.CHECKED_IN ||
+                    newStatus == ReservationStatus.CANCELLED ||
+                    newStatus == ReservationStatus.NO_SHOW;
+            case CHECKED_IN -> newStatus == ReservationStatus.CHECKED_OUT;
+            case CHECKED_OUT, CANCELLED, NO_SHOW -> false;
+        };
+
+        if (!isValidTransition) {
+            throw new DataIntegrityException(
+                    String.format("Cannot transition reservation status from %s to %s", currentStatus, newStatus)
+            );
+        }
+    }
+
     private void checkRoomAvailability(Long roomId, LocalDate start, LocalDate end) {
         List<ReservationEntity> overlaps = reservationRepository.findOverlappingReservations(roomId, start, end);
         if (!overlaps.isEmpty()) {
-            throw new DataIntegrityException("Room is reserved");
+            throw new DataIntegrityException("Room is not available for the selected dates. Please choose different dates.");
         }
     }
 
@@ -152,6 +229,14 @@ public class ReservationService {
     public void cancelReservation(Long id) {
         ReservationEntity res = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+
+        if (res.getStatus() == ReservationStatus.CHECKED_OUT) {
+            throw new DataIntegrityException("Cannot cancel a reservation that has already been checked out");
+        }
+
+        if (res.getStatus() == ReservationStatus.CANCELLED) {
+            throw new DataIntegrityException("Reservation is already cancelled");
+        }
 
         res.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(res);
@@ -167,12 +252,12 @@ public class ReservationService {
                 .filter(r -> !r.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Active reservation not found with id: " + id));
 
-        if (res.getStatus() == ReservationStatus.CONFIRMED && res.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+        if (res.getStatus() == ReservationStatus.CONFIRMED &&
+                res.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
             log.warn("Attempt to delete an active or near-term reservation: {}", id);
         }
 
         res.setDeleted(true);
-
         res.setStatus(ReservationStatus.CANCELLED);
 
         reservationRepository.save(res);
@@ -205,9 +290,7 @@ public class ReservationService {
                         res.getGuest().getFirstName(),
                         res.getGuest().getLastName()
                 ))
-                .collect(Collectors.groupingBy(dto -> {
-                    return reservationRepository.findById(dto.id()).get().getRoom().getId();
-                }));
+                .collect(Collectors.groupingBy(ReservationGridDto::roomId));
     }
 
     @Transactional(readOnly = true)

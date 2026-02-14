@@ -5,8 +5,17 @@
       <h4 class="fw-bold mb-0 text-dark text-uppercase">
         <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>HOTEL PMS GRID
       </h4>
-      <div class="d-flex gap-2">
-        <input type="month" class="form-control border-secondary shadow-sm w-auto fw-bold" [(ngModel)]="selectedDate" (change)="updateCalendar()">
+      <div class="d-flex gap-2 align-items-center">
+        <button class="btn btn-outline-secondary shadow-sm px-3" (click)="shiftWeek(-1)" title="1 Hafta Geri">
+          <i class="bi bi-chevron-left fw-bold"></i>
+        </button>
+        <input type="date" class="form-control border-secondary shadow-sm fw-bold text-center"
+               [(ngModel)]="selectedStartDate"
+               (change)="updateCalendarFromDate()"
+               style="width: 150px;">
+        <button class="btn btn-outline-secondary shadow-sm px-3" (click)="shiftWeek(1)" title="1 Hafta İleri">
+          <i class="bi bi-chevron-right fw-bold"></i>
+        </button>
         <button class="btn btn-dark shadow-sm px-3" (click)="loadGridData()">
           <i class="bi bi-arrow-clockwise"></i>
         </button>
@@ -22,7 +31,8 @@
           </th>
           <th *ngFor="let day of daysInMonth"
               class="text-center small py-3 cell-square border-bottom-0">
-            {{ day }}
+            {{ day.day }}<br>
+            <small class="text-muted">{{ day.monthShort }}</small>
           </th>
         </tr>
         </thead>
@@ -37,7 +47,7 @@
           <td *ngFor="let day of daysInMonth"
               class="p-0 position-relative cell-square align-middle">
 
-            <ng-container *ngIf="getReservationStart(room.id, day) as res">
+            <ng-container *ngIf="getReservationStart(room.id, day.fullDate) as res">
               <div (click)="openEditReservation(res.id!)"
                    class="res-cylinder shadow-sm"
                    [ngClass]="res.status.toLowerCase()"
@@ -55,8 +65,8 @@
               </div>
             </ng-container>
 
-            <div *ngIf="!isDayOccupied(room.id, day)"
-                 (click)="openNewReservation(room, day)"
+            <div *ngIf="!isDayOccupied(room.id, day.fullDate)"
+                 (click)="openNewReservation(room, day.fullDate)"
                  class="h-100 w-100 empty-cell-hover">
             </div>
 
@@ -130,11 +140,15 @@
                 <div class="row g-2 p-3 bg-light rounded border mx-0 shadow-sm small">
                   <div class="col-6">
                     <label class="form-label mb-0 fw-bold small">Check-In</label>
-                    <input type="date" class="form-control form-control-sm border-secondary shadow-sm" formControlName="checkInDate">
+                    <input type="date"
+                           class="form-control form-control-sm border-secondary shadow-sm"
+                           formControlName="checkInDate">
                   </div>
                   <div class="col-6">
                     <label class="form-label mb-0 fw-bold small">Check-Out</label>
-                    <input type="date" class="form-control form-control-sm border-secondary shadow-sm" formControlName="checkOutDate">
+                    <input type="date"
+                           class="form-control form-control-sm border-secondary shadow-sm"
+                           formControlName="checkOutDate">
                   </div>
                 </div>
               </div>

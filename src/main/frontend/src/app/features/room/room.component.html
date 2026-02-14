@@ -330,11 +330,15 @@
       <div class="row g-3 mb-4">
         <div class="col-6">
           <label class="small fw-bold text-secondary mb-1">Check-In</label>
-          <input type="date" class="form-control border-0 shadow-sm p-3" [(ngModel)]="reservationDates.checkIn">
+          <input type="date"
+                 class="form-control border-0 shadow-sm p-3"
+                 [(ngModel)]="reservationDates.checkIn">
         </div>
         <div class="col-6">
           <label class="small fw-bold text-secondary mb-1">Check-Out</label>
-          <input type="date" class="form-control border-0 shadow-sm p-3" [(ngModel)]="reservationDates.checkOut">
+          <input type="date"
+                 class="form-control border-0 shadow-sm p-3"
+                 [(ngModel)]="reservationDates.checkOut">
         </div>
       </div>
 
@@ -351,10 +355,15 @@
         <small class="text-primary mt-1 d-block" *ngIf="getNightCount() > 0">
           Rate: ${{ selectedRoom.price }} per night
         </small>
+        <small class="text-danger mt-1 d-block" *ngIf="getNightCount() === 0">
+          Please select valid dates (minimum 1 night)
+        </small>
       </div>
 
       <div class="d-grid mt-4">
-        <button class="btn btn-primary btn-lg fw-bold shadow-sm rounded-3 py-3" (click)="confirmQuickReservation()">
+        <button class="btn btn-primary btn-lg fw-bold shadow-sm rounded-3 py-3"
+                (click)="confirmQuickReservation()"
+                [disabled]="getNightCount() < 1">
           CONFIRM BOOKING
         </button>
       </div>

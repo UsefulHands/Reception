@@ -9,9 +9,17 @@ public record ReservationCreateRequest(
         @NotNull Long roomId,
         @NotNull LocalDate checkInDate,
         @NotNull LocalDate checkOutDate,
-        String firstName,
-        String lastName,
-        String phoneNumber,
-        String identityNumber,
+        @NotNull  String guestFirstName,
+        @NotNull String guestLastName,
+        @NotNull String phoneNumber,
+        @NotNull String identityNumber,
         ReservationStatus status
-) {}
+) {
+    public String firstNameOrEmpty() {
+        return guestFirstName != null ? guestFirstName : "";
+    }
+
+    public String lastNameOrEmpty() {
+        return guestLastName != null ? guestLastName : "";
+    }
+}
