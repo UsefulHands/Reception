@@ -1,6 +1,7 @@
 package com.github.UsefulHands.reception.features.audit;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
+import com.github.UsefulHands.reception.features.audit.dtos.AuditLogDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

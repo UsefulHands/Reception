@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()   // Login
                         .requestMatchers(HttpMethod.POST, "/api/v1/guests").permitAll()  // Register
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms").permitAll() // View available rooms
+                        .requestMatchers("/api/v1/reservations/grid/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

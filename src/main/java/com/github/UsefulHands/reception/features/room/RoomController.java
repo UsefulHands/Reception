@@ -1,6 +1,7 @@
 package com.github.UsefulHands.reception.features.room;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
+import com.github.UsefulHands.reception.features.room.dtos.RoomDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

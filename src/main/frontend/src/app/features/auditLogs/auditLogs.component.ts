@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {AuditLogsModel} from './auditLogs.model';
+import {AuditLogsModel} from './models/auditLogs.model';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
 import {AuditLogService} from './auditLogs.service';
 

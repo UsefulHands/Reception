@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.features.audit;
 
+import com.github.UsefulHands.reception.features.audit.dtos.AuditLogDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +29,6 @@ public class AuditLogService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(String action, String username, String details) {
         try {
-            // 255 karakter sınırına takılmamak için (SQL TEXT değilse)
             String safeDetails = (details != null && details.length() > 255)
                     ? details.substring(0, 252) + "..."
                     : details;

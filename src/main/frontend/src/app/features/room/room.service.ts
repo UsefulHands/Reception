@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {RoomModel} from './room.model';
+import {RoomModel} from './models/room.model';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Injectable({

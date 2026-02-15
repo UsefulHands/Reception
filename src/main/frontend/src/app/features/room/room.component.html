@@ -208,6 +208,7 @@
     </div>
   </div>
 </div>
+
 <div class="modal fade" id="roomDetailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -220,7 +221,7 @@
 
         <div class="modal-body p-0">
           <div class="row g-0">
-            <div class="col-md-6 position-relative" *ngIf="detailRoom?.images">
+            <div class="col-md-6 position-relative">
               <img [src]="detailRoom.images[currentImageIndex]"
                    (click)="openPreview()"
                    class="img-fluid h-100 w-100"
@@ -318,57 +319,140 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="quickReserveModal" tabindex="-1">
-  <div class="modal-dialog modal-md modal-dialog-centered"> <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
 
-    <div class="modal-header bg-primary text-white py-3 border-0 px-4">
-      <h5 class="modal-title fw-bold">RESERVATION SUMMARY</h5>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-    </div>
+<div class="modal fade" id="reservationGridModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
 
-    <div class="modal-body p-4 bg-light">
-      <div class="row g-3 mb-4">
-        <div class="col-6">
-          <label class="small fw-bold text-secondary mb-1">Check-In</label>
-          <input type="date"
-                 class="form-control border-0 shadow-sm p-3"
-                 [(ngModel)]="reservationDates.checkIn">
+      <div class="modal-header bg-dark text-white border-0 py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-calendar-check me-2"></i>
+          SELECT YOUR DATES - ROOM {{ detailRoom?.roomNumber }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-secondary-subtle" *ngIf="detailRoom">
+
+        <div class="container-fluid px-md-5">
+          <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border border-2 border-dark-subtle">
+            <div>
+              <h5 class="fw-bold mb-1 text-dark">{{ detailRoom.type }} - ${{ detailRoom.price }}/night</h5>
+              <small class="text-muted">Click on an available date to start your reservation</small>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <button class="btn btn-outline-secondary shadow-sm px-3" (click)="shiftWeek(-1)">
+                <i class="bi bi-chevron-left fw-bold"></i>
+              </button>
+              <input type="date" class="form-control border-secondary shadow-sm fw-bold text-center"
+                     [(ngModel)]="selectedStartDate"
+                     (change)="updateCalendar()"
+                     style="width: 150px;">
+              <button class="btn btn-outline-secondary shadow-sm px-3" (click)="shiftWeek(1)">
+                <i class="bi bi-chevron-right fw-bold"></i>
+              </button>
+              <button class="btn btn-dark shadow-sm px-3" (click)="updateCalendar()">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive shadow-lg rounded-4 bg-white border border-2 border-dark-subtle grid-scroll-container mb-4">
+            <table class="table table-bordered mb-0 border-0">
+              <thead class="table-dark">
+              <tr>
+                <th class="room-numbers sticky-column bg-dark text-center py-3 border-bottom-0" style="z-index: 120;">
+                  ROOM
+                </th>
+                <th *ngFor="let day of daysInMonth"
+                    class="text-center small py-3 cell-square border-bottom-0">
+                  {{ day.day }}<br>
+                  <small class="text-muted">{{ day.monthShort }}</small>
+                </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr class="hover-row">
+                <td class="room-numbers sticky-column fw-bold bg-light text-center align-middle border-end">
+                    <span class="badge bg-dark px-3 py-2 shadow-sm w-100">
+                      {{ detailRoom.roomNumber }}
+                    </span>
+                </td>
+
+                <td *ngFor="let day of daysInMonth"
+                    class="p-0 position-relative cell-square align-middle">
+
+                  <ng-container *ngIf="detailRoom.id && getReservationStart(detailRoom.id, day.fullDate) as res">
+                    <div class="res-cylinder shadow-sm occupied"
+                         [ngStyle]="calculateResStyle(res.checkInDate, res.checkOutDate)">
+                      <span class="res-label">OCCUPIED</span>
+                    </div>
+                  </ng-container>
+
+                  <div *ngIf="detailRoom.id && !isDayOccupied(detailRoom.id, day.fullDate)"
+                       (click)="selectCheckInDate(day.fullDate)"
+                       class="h-100 w-100 empty-cell-hover">
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="row g-3 bg-white p-4 rounded-3 shadow-sm border border-2 border-dark-subtle mb-3">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-uppercase text-dark">Check-In Date</label>
+              <input type="date"
+                     class="form-control border-secondary shadow-sm"
+                     [(ngModel)]="reservationDates.checkIn"
+                     [min]="formatDate(minDate)">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-uppercase text-dark">Check-Out Date</label>
+              <input type="date"
+                     class="form-control border-secondary shadow-sm"
+                     [(ngModel)]="reservationDates.checkOut"
+                     [min]="reservationDates.checkIn">
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <label class="form-label small fw-bold text-uppercase text-dark d-block">Total Nights</label>
+                <h3 class="fw-bold text-primary mb-0">{{ getNightCount() }}</h3>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <label class="form-label small fw-bold text-uppercase text-dark d-block">Total Price</label>
+                <h3 class="fw-bold text-success mb-0">${{ calculateTotalPrice() }}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm border border-2 border-dark-subtle">
+            <div class="d-flex gap-4 align-items-center">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width: 30px; height: 20px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 6px;"></div>
+                <small class="text-muted fw-bold">Occupied</small>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div style="width: 30px; height: 20px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;"></div>
+                <small class="text-muted fw-bold">Available (Click to Select)</small>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-lg me-1"></i>Cancel
+              </button>
+              <button class="btn btn-primary fw-bold px-4"
+                      (click)="confirmQuickReservation()"
+                      [disabled]="!reservationDates.checkIn || !reservationDates.checkOut || getNightCount() < 1">
+                <i class="bi bi-check-circle me-2"></i>CONFIRM RESERVATION
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="col-6">
-          <label class="small fw-bold text-secondary mb-1">Check-Out</label>
-          <input type="date"
-                 class="form-control border-0 shadow-sm p-3"
-                 [(ngModel)]="reservationDates.checkOut">
-        </div>
-      </div>
-
-      <hr class="text-muted opacity-25">
-
-      <div class="py-3 px-2">
-        <span class="text-muted d-block small mb-1">Total Estimated Price</span>
-        <h3 class="fw-bold text-dark mb-0">
-          ${{ calculateTotalPrice() }}
-          <span class="small text-muted fw-normal fs-6">
-              / {{ getNightCount() }} Night(s)
-            </span>
-        </h3>
-        <small class="text-primary mt-1 d-block" *ngIf="getNightCount() > 0">
-          Rate: ${{ selectedRoom.price }} per night
-        </small>
-        <small class="text-danger mt-1 d-block" *ngIf="getNightCount() === 0">
-          Please select valid dates (minimum 1 night)
-        </small>
-      </div>
-
-      <div class="d-grid mt-4">
-        <button class="btn btn-primary btn-lg fw-bold shadow-sm rounded-3 py-3"
-                (click)="confirmQuickReservation()"
-                [disabled]="getNightCount() < 1">
-          CONFIRM BOOKING
-        </button>
       </div>
     </div>
-
-  </div>
   </div>
 </div>

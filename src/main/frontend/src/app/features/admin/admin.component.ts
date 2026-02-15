@@ -1,8 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminModel } from './admin.model';
+import {AdminModel, AdminRegistrationRequest, AdminUpdateRequest} from './models/admin.model';
 import { AdminService } from './admin.service';
-import { AdminRegistrationRequest } from './admin.registration.request';
 import { ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Component({
@@ -28,6 +27,7 @@ export class AdminComponent implements OnInit {
 
   getEmptyAdmin() {
     return {
+      id: 0,
       firstName: '',
       lastName: '',
       corporateEmail: '',
@@ -51,7 +51,7 @@ export class AdminComponent implements OnInit {
 
   saveAdmin() {
     if (this.isEditMode && this.selectedAdmin.id) {
-      const updatePayload: AdminModel = {
+      const updatePayload: AdminUpdateRequest = {
         firstName: this.selectedAdmin.firstName,
         lastName: this.selectedAdmin.lastName,
         corporateEmail: this.selectedAdmin.corporateEmail,

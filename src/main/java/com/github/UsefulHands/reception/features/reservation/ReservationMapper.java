@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.features.reservation;
 
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

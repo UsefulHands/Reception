@@ -114,7 +114,7 @@
                         </div>
                         <div>
                           <div class="fw-bold text-dark">{{ guest.firstName }} {{ guest.lastName }}</div>
-                          <small class="text-muted">Member since {{ 2026 | date:'yyyy' }}</small>
+                          <small class="text-muted">Member since {{ guest.createdAt | date:'yyyy' }}</small>
                         </div>
                       </div>
                     </td>

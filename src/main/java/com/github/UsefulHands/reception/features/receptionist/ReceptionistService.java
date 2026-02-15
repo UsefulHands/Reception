@@ -1,13 +1,10 @@
 package com.github.UsefulHands.reception.features.receptionist;
 
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
-import com.github.UsefulHands.reception.features.admin.AdminDto;
 import com.github.UsefulHands.reception.features.audit.AuditLogService;
-import com.github.UsefulHands.reception.features.guest.GuestDto;
-import com.github.UsefulHands.reception.features.guest.GuestEntity;
+import com.github.UsefulHands.reception.features.receptionist.dtos.ReceptionistDto;
 import com.github.UsefulHands.reception.features.user.UserEntity;
 import com.github.UsefulHands.reception.features.user.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;

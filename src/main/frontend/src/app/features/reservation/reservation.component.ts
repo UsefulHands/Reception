@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ReservationService } from './reservation.service';
-import { ReservationGridResponse } from './reservation.grid.response';
-import { ReservationStatus } from './reservation.status';
-import { ReservationModel } from './reservation.model';
+import {ReservationGridResponse, ReservationModel, ReservationStatus} from './models/reservation.model';
 
 declare var bootstrap: any;
 

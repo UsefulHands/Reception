@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import {RegisterRequest} from './register.request';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
+import {RegisterRequest} from './models/guest.model';
 
 @Component({
   selector: 'app-register',

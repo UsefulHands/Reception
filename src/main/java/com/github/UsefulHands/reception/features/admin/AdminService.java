@@ -1,6 +1,7 @@
 package com.github.UsefulHands.reception.features.admin;
 
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
+import com.github.UsefulHands.reception.features.admin.dtos.AdminDto;
 import com.github.UsefulHands.reception.features.audit.AuditLogService;
 import com.github.UsefulHands.reception.features.user.UserEntity;
 import com.github.UsefulHands.reception.features.user.UserService;

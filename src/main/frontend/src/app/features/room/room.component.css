@@ -8,6 +8,83 @@
   border-color: #0d6efd !important;
 }
 
-.fixed-top {
-  transition: all 0.3s ease-in-out;
+.res-cylinder {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 34px;
+  border-radius: 6px;
+  z-index: 20;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 8px;
+}
+
+.res-cylinder.occupied {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+  cursor: not-allowed;
+}
+
+.res-label {
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  pointer-events: none;
+}
+
+.res-cylinder:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+  z-index: 1000 !important;
+}
+
+.cell-square {
+  min-width: 45px;
+  width: 45px;
+  height: 60px;
+  border: 1px solid #f0f0f0 !important;
+  vertical-align: middle;
+  transition: background-color 0.15s ease;
+}
+
+.empty-cell-hover:hover {
+  background-color: rgba(0,0,0,0.06);
+  cursor: pointer;
+}
+
+.cell-square:has(.res-cylinder) {
+  background-color: transparent !important;
+}
+
+.grid-scroll-container {
+  overflow-x: auto;
+}
+
+.grid-scroll-container table {
+  table-layout: fixed;
+  min-width: 100%;
+}
+
+.room-numbers {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+.sticky-column {
+  position: sticky;
+  left: 0;
+  z-index: 100;
+}
+
+.hover-row:hover {
+  background-color: rgba(0,0,0,0.02);
 }

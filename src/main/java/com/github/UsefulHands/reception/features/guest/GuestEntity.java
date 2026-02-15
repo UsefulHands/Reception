@@ -21,10 +21,10 @@ public class GuestEntity extends BaseEntity {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String identityNumber;
 
     @OneToOne(fetch = FetchType.LAZY)

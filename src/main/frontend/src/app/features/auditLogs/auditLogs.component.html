@@ -35,7 +35,7 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
             <tr>
-              <th class="ps-4 py-3 text-secondary small fw-bold">TIMESTAMP</th>
+              <th class="ps-4 py-3 text-secondary small fw-bold">LOG DATE</th>
               <th class="py-3 text-secondary small fw-bold">PERFORMED BY</th>
               <th class="py-3 text-secondary small fw-bold">ACTION TYPE</th>
               <th class="py-3 text-secondary small fw-bold">ACTIVITY DETAILS</th>
@@ -47,8 +47,8 @@
                 <tr class="log-row">
                   <td class="ps-4">
                     <div class="d-flex flex-column">
-                      <span class="fw-bold text-dark small">{{ log.timestamp | date:'dd MMM yyyy' }}</span>
-                      <span class="text-muted extra-small">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                      <span class="fw-bold text-dark small">{{ log.createdAt | date:'dd MMM yyyy' }}</span>
+                      <span class="text-muted extra-small">{{ log.createdAt | date:'HH:mm:ss' }}</span>
                     </div>
                   </td>
                   <td>
@@ -60,15 +60,15 @@
                     </div>
                   </td>
                   <td>
-                    <span class="badge rounded-pill px-3 py-2 border shadow-sm"
-                          [ngClass]="{
-                        'bg-danger-subtle text-danger border-danger-subtle': log.action.includes('DELETE'),
-                        'bg-success-subtle text-success border-success-subtle': log.action.includes('CREATE') || log.action.includes('SAVE'),
-                        'bg-warning-subtle text-warning border-warning-subtle': log.action.includes('UPDATE'),
-                        'bg-primary-subtle text-primary border-primary-subtle': log.action.includes('LOGIN')
-                      }">
-                      {{ log.action }}
-                    </span>
+          <span class="badge rounded-pill px-3 py-2 border shadow-sm"
+                [ngClass]="{
+              'bg-danger-subtle text-danger border-danger-subtle': log.action.includes('DELETE'),
+              'bg-success-subtle text-success border-success-subtle': log.action.includes('CREATE') || log.action.includes('SAVE'),
+              'bg-warning-subtle text-warning border-warning-subtle': log.action.includes('UPDATE'),
+              'bg-primary-subtle text-primary border-primary-subtle': log.action.includes('LOGIN')
+            }">
+            {{ log.action }}
+          </span>
                   </td>
                   <td>
                     <div class="text-wrap small text-muted" style="max-width: 350px;">

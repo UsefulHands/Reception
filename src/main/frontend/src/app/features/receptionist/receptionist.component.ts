@@ -1,11 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReceptionistModel } from './receptionist.model';
-import { ReceptionistRegistrationRequest } from './receptionist.registration.request';
+import {ReceptionistModel, SelectedReceptionist, SHIFT_TYPES, ReceptionistRegistrationRequest} from './models/receptionist.model';
 import { ReceptionistService } from './receptionist.service';
-import {SHIFT_TYPES} from './shift.types';
-import {SelectedReceptionist} from './selected.receptionist';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Component({
@@ -58,6 +55,7 @@ export class ReceptionistComponent implements OnInit {
     } else {
       this.handleCreate();
     }
+    this.cdr.detectChanges();
   }
 
   private handleUpdate(): void {

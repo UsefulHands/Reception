@@ -1,7 +1,7 @@
 .avatar-guest {
   width: 40px;
   height: 40px;
-  border-radius: 10px; /* Tam yuvarlak değil, modern köşeli-yuvarlak */
+  border-radius: 10px;
   transition: all 0.3s ease;
 }
 

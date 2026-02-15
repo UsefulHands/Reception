@@ -1,7 +1,8 @@
 package com.github.UsefulHands.reception.features.user;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
-import com.github.UsefulHands.reception.features.admin.AdminDto;
+import com.github.UsefulHands.reception.features.user.dtos.UserDto;
+import com.github.UsefulHands.reception.features.user.dtos.UserLoginRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

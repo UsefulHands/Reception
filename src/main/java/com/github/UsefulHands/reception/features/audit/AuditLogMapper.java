@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.features.audit;
 
+import com.github.UsefulHands.reception.features.audit.dtos.AuditLogDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

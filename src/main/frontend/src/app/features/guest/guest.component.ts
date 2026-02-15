@@ -1,15 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GuestService } from './guest.service';
 import { ApiResponse} from '../../core/models/api/ApiResponse';
-import {GuestModel} from './guest.model';
-import {GuestRegistrationRequest} from './guest.registration.request';
+import {GuestModel, GuestRegistrationRequest, GuestUpdateRequest} from './models/guest.model';
 
 @Component({
   selector: 'app-guest',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './guest.component.html',
   styleUrls: ['./guest.component.css']
 })
@@ -29,10 +28,12 @@ export class GuestComponent implements OnInit {
 
   getEmptyGuest() {
     return {
+      id: 0,
       firstName: '',
       lastName: '',
       phoneNumber: '',
       identityNumber: '',
+      createdAt: '',
       username: '',
       password: ''
     };
@@ -52,7 +53,7 @@ export class GuestComponent implements OnInit {
 
   saveGuest() {
     if (this.isEditMode && this.selectedGuest.id) {
-      const updatePayload: GuestModel = {
+      const updatePayload: GuestUpdateRequest = {
         firstName: this.selectedGuest.firstName,
         lastName: this.selectedGuest.lastName,
         phoneNumber: this.selectedGuest.phoneNumber,
@@ -73,7 +74,7 @@ export class GuestComponent implements OnInit {
       }
     } else {
       const registrationPayload: GuestRegistrationRequest = {
-        guestDetails: {
+        guestDto: {
           firstName: this.selectedGuest.firstName,
           lastName: this.selectedGuest.lastName,
           phoneNumber: this.selectedGuest.phoneNumber,

@@ -1,7 +1,6 @@
 package com.github.UsefulHands.reception.features.receptionist;
 
-import com.github.UsefulHands.reception.features.guest.GuestDto;
-import com.github.UsefulHands.reception.features.guest.GuestEntity;
+import com.github.UsefulHands.reception.features.receptionist.dtos.ReceptionistDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

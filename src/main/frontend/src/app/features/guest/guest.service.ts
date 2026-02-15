@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
-import {GuestModel} from './guest.model';
-import {GuestRegistrationRequest} from './guest.registration.request';
+import {GuestModel, GuestUpdateRequest, GuestRegistrationRequest} from './models/guest.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +21,7 @@ export class GuestService {
     return this.http.post<ApiResponse<GuestModel>>(this.API_URL, request);
   }
 
-  updateGuest(id: number, guest: GuestModel): Observable<ApiResponse<GuestModel>> {
+  updateGuest(id: number, guest: GuestUpdateRequest): Observable<ApiResponse<GuestModel>> {
     return this.http.put<ApiResponse<GuestModel>>(`${this.API_URL}/${id}`, guest);
   }
 

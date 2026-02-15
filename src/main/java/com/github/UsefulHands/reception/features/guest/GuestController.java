@@ -1,6 +1,9 @@
 package com.github.UsefulHands.reception.features.guest;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
+import com.github.UsefulHands.reception.features.guest.dtos.GuestDto;
+import com.github.UsefulHands.reception.features.guest.dtos.GuestProfileUpdateRequest;
+import com.github.UsefulHands.reception.features.guest.dtos.GuestRegistrationRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +25,7 @@ public class GuestController {
     @PostMapping
     public ResponseEntity<ApiResponse<GuestDto>> create(@Valid @RequestBody GuestRegistrationRequest request) {
         GuestDto guestDto = guestService.registerGuest(
-                request.getGuestDetails(),
+                request.getGuestDto(),
                 request.getUsername(),
                 request.getPassword()
         );

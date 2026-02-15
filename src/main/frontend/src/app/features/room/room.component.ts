@@ -1,12 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, HostListener, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RoomService } from './room.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ReservationService } from '../reservation/reservation.service';
-import { RoomModel } from './room.model';
-import { ROOM_CONSTANTS } from './room.constants';
+import { RoomModel, ROOM_CONSTANTS } from './models/room.model';
 import { ApiResponse } from '../../core/models/api/ApiResponse';
 
 declare var bootstrap: any;
@@ -22,6 +21,10 @@ export class RoomComponent implements OnInit {
   rooms: RoomModel[] = [];
   selectedRoom: RoomModel = this.getEmptyRoom();
   detailRoom: RoomModel | null = null;
+
+  gridData: any = {};
+  daysInMonth: any[] = [];
+  selectedStartDate: string = new Date().toISOString().substring(0, 10);
 
   reservationDates = { checkIn: '', checkOut: '' };
   isEditMode = false;
@@ -45,6 +48,14 @@ export class RoomComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRooms();
+    this.updateCalendar();
+  }
+
+  viewDetails(room: RoomModel): void {
+    this.detailRoom = room;
+    this.currentImageIndex = 0;
+    this.updateCalendar();
+    this.openModal('roomDetailModal');
   }
 
   get isAdmin() { return this.authService.hasRole('ADMIN'); }
@@ -161,12 +172,6 @@ export class RoomComponent implements OnInit {
     }
   }
 
-  viewDetails(room: RoomModel): void {
-    this.detailRoom = room;
-    this.currentImageIndex = 0;
-    this.openModal('roomDetailModal');
-  }
-
   toggleAvailableFilter(): void {
     this.showAvailableOnly = !this.showAvailableOnly;
     this.loadRooms();
@@ -211,13 +216,24 @@ export class RoomComponent implements OnInit {
     this.reservationDates.checkIn = this.formatDate(today);
     this.reservationDates.checkOut = this.formatDate(tomorrow);
 
+    this.updateCalendar();
+
     this.closeModal('roomDetailModal');
-    this.openModal('quickReserveModal');
+    this.openModal('reservationGridModal');
   }
 
   private openModal(id: string): void {
     const el = document.getElementById(id);
-    if (el) new bootstrap.Modal(el).show();
+    if (el) {
+      const modal = new bootstrap.Modal(el);
+      modal.show();
+
+      if (id === 'reservationGridModal') {
+        el.addEventListener('shown.bs.modal', () => {
+          this.cdr.detectChanges();
+        }, { once: true });
+      }
+    }
   }
 
   private closeModal(id: string): void {
@@ -264,9 +280,144 @@ export class RoomComponent implements OnInit {
     return date.toISOString().substring(0, 10);
   }
 
-  onCheckInChange(): void {
+  selectCheckInDate(dateStr: string): void {
+    this.reservationDates.checkIn = dateStr;
+    const nextDay = new Date(dateStr);
+    nextDay.setDate(nextDay.getDate() + 1);
+    this.reservationDates.checkOut = nextDay.toISOString().substring(0, 10);
+    this.cdr.detectChanges();
   }
 
-  onCheckOutChange(): void {
+  updateCalendar(): void {
+    const startDate = new Date(this.selectedStartDate);
+    this.daysInMonth = [];
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+
+    for (let i = 0; i < totalDays; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+
+      const year = currentDate.getFullYear();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const day = currentDate.getDate();
+
+      this.daysInMonth.push({
+        day: day,
+        monthShort: monthNames[currentDate.getMonth()],
+        fullDate: `${year}-${month}-${day.toString().padStart(2, '0')}`
+      });
+    }
+
+    if (this.detailRoom?.id) {
+      this.loadPublicGridData(this.detailRoom.id);
+    }
+  }
+
+  loadPublicGridData(roomId: number): void {
+    if (this.daysInMonth.length === 0) return;
+
+    const startDate = new Date(this.daysInMonth[0].fullDate);
+    startDate.setDate(startDate.getDate() - 7);
+    const start = startDate.toISOString().substring(0, 10);
+
+    const endDate = new Date(this.daysInMonth[this.daysInMonth.length - 1].fullDate);
+    endDate.setDate(endDate.getDate() + 7);
+    const end = endDate.toISOString().substring(0, 10);
+
+    this.reservationService.getPublicGridData(roomId, start, end).subscribe({
+      next: (res) => {
+        this.gridData[roomId] = res.data || [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  shiftWeek(direction: number): void {
+    const currentDate = new Date(this.selectedStartDate);
+    currentDate.setDate(currentDate.getDate() + (direction * 7));
+    this.selectedStartDate = currentDate.toISOString().substring(0, 10);
+    this.updateCalendar();
+  }
+
+  getReservationStart(roomId: number, dateStr: string): any {
+    const reservations = this.gridData[roomId] || [];
+
+    for (const res of reservations) {
+      if (res.checkInDate === dateStr) {
+        return res;
+      }
+
+      if (res.checkInDate < dateStr && dateStr < res.checkOutDate) {
+        const isFirstVisibleDay = !this.daysInMonth.some((d: any) => d.fullDate === res.checkInDate);
+
+        if (isFirstVisibleDay) {
+          const firstDay = this.daysInMonth[0]?.fullDate;
+          if (dateStr === firstDay) {
+            return res;
+          }
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  isDayOccupied(roomId: number, dateStr: string): boolean {
+    return (this.gridData[roomId] || []).some((res: any) =>
+      dateStr >= res.checkInDate && dateStr < res.checkOutDate
+    );
+  }
+
+  private getCellWidth(): number {
+    const cell = document.querySelector('.cell-square') as HTMLElement;
+    return cell ? cell.getBoundingClientRect().width : 45;
+  }
+
+  calculateResStyle(checkIn: string, checkOut: string): any {
+    const d1 = new Date(checkIn);
+    const d2 = new Date(checkOut);
+    d1.setHours(0,0,0,0);
+    d2.setHours(0,0,0,0);
+
+    const firstVisibleDate = new Date(this.daysInMonth[0]?.fullDate || checkIn);
+    firstVisibleDate.setHours(0,0,0,0);
+
+    const lastVisibleDate = new Date(this.daysInMonth[this.daysInMonth.length - 1]?.fullDate || checkOut);
+    lastVisibleDate.setHours(0,0,0,0);
+
+    const effectiveStart = d1 < firstVisibleDate ? firstVisibleDate : d1;
+    const effectiveEnd = d2 > lastVisibleDate ? lastVisibleDate : d2;
+
+    const diffDays = Math.max(
+      Math.round((effectiveEnd.getTime() - effectiveStart.getTime()) / 86400000),
+      1
+    );
+
+    const cellWidth = this.getCellWidth();
+
+    const startsBeforeGrid = d1 < firstVisibleDate;
+    const endsAfterGrid = d2 > lastVisibleDate;
+
+    const startOffset = startsBeforeGrid ? 0 : cellWidth * 0.6;
+    const endOffset = endsAfterGrid ? cellWidth : cellWidth * 0.4;
+
+    const width = (diffDays * cellWidth) - startOffset + endOffset;
+
+    return {
+      width: `${width}px`,
+      left: `${startOffset}px`,
+      position: 'absolute'
+    };
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.cdr.detectChanges();
   }
 }

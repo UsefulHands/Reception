@@ -3,15 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {LoginRequest} from '../../features/login/login.request';
+import {LoginRequest} from '../../features/login/models/login.request';
 import {ApiResponse} from '../models/api/ApiResponse';
-
-interface DecodedToken {
-  sub: string;
-  roles?: string[];
-  role?: string;
-  exp: number;
-}
+import {DecodedToken} from '../models/auth/decode.token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

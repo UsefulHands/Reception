@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
-import {ReservationGridResponse} from './reservation.grid.response';
-import {ReservationModel} from './reservation.model';
+import {ReservationGridResponse, ReservationModel} from './models/reservation.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +16,10 @@ export class ReservationService {
 
   getGridData(start: string, end: string): Observable<ApiResponse<ReservationGridResponse>> {
     return this.http.get<ApiResponse<ReservationGridResponse>>(`${this.apiUrl}/grid?start=${start}&end=${end}`);
+  }
+
+  getPublicGridData(roomId: number, start: string, end: string):  Observable<ApiResponse<ReservationGridResponse>> {
+    return this.http.get<ApiResponse<ReservationGridResponse>>(`${this.apiUrl}/grid/${roomId}?start=${start}&end=${end}`);
   }
 
   getById(id: number): Observable<ApiResponse<ReservationModel>> {

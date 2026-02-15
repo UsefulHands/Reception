@@ -6,6 +6,10 @@ import com.github.UsefulHands.reception.features.audit.AuditLogService;
 import com.github.UsefulHands.reception.features.guest.GuestEntity;
 import com.github.UsefulHands.reception.features.guest.GuestRepository;
 import com.github.UsefulHands.reception.features.guest.GuestService;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationCreateRequest;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationDto;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationGridDto;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationUpdateRequest;
 import com.github.UsefulHands.reception.features.room.RoomEntity;
 import com.github.UsefulHands.reception.features.room.RoomRepository;
 import com.github.UsefulHands.reception.features.user.UserEntity;
@@ -291,6 +295,22 @@ public class ReservationService {
                         res.getGuest().getLastName()
                 ))
                 .collect(Collectors.groupingBy(ReservationGridDto::roomId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationGridDto> getPublicGridData(Long roomId, LocalDate start, LocalDate end) {
+        return reservationRepository.findOverlappingReservations(roomId, start, end).stream()
+                .map(res -> new ReservationGridDto(
+                        null,
+                        res.getRoom().getId(),
+                        res.getCheckInDate(),
+                        res.getCheckOutDate(),
+                        "OCCUPIED",
+                        res.getRoom().getRoomNumber(),
+                        "",
+                        ""
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

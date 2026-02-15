@@ -1,6 +1,10 @@
 package com.github.UsefulHands.reception.features.reservation;
 
 import com.github.UsefulHands.reception.common.response.ApiResponse;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationCreateRequest;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationDto;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationGridDto;
+import com.github.UsefulHands.reception.features.reservation.dtos.ReservationUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,6 +33,16 @@ public class ReservationController {
 
         Map<Long, List<ReservationGridDto>> data = reservationService.getGridData(start, end);
         return ResponseEntity.ok(ApiResponse.success(data, "Grid data retrieved successfully"));
+    }
+
+    @GetMapping("/grid/{roomId}")
+    public ResponseEntity<ApiResponse<List<ReservationGridDto>>> getRoomPublicGrid(
+            @PathVariable Long roomId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+
+        List<ReservationGridDto> data = reservationService.getPublicGridData(roomId, start, end);
+        return ResponseEntity.ok(ApiResponse.success(data, "Room availability retrieved successfully"));
     }
 
     @PostMapping

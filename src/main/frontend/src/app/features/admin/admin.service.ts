@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse} from '../../core/models/api/ApiResponse';
-import { AdminRegistrationRequest } from './admin.registration.request';
-import { AdminModel } from './admin.model';
+import {AdminModel, AdminRegistrationRequest, AdminUpdateRequest} from './models/admin.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +21,7 @@ export class AdminService {
     return this.http.post<ApiResponse<AdminModel>>(this.API_URL, request);
   }
 
-  updateAdmin(id: number, admin: AdminModel): Observable<ApiResponse<AdminModel>> {
+  updateAdmin(id: number, admin: AdminUpdateRequest): Observable<ApiResponse<AdminModel>> {
     return this.http.put<ApiResponse<AdminModel>>(`${this.API_URL}/${id}`, admin);
   }
 

@@ -3,6 +3,7 @@ package com.github.UsefulHands.reception.features.room;
 import com.github.UsefulHands.reception.common.exception.DataIntegrityException;
 import com.github.UsefulHands.reception.features.audit.AuditLogService;
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
+import com.github.UsefulHands.reception.features.room.dtos.RoomDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

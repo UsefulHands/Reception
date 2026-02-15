@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.features.guest;
 
+import com.github.UsefulHands.reception.features.guest.dtos.GuestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

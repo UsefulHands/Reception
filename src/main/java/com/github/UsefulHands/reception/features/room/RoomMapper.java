@@ -1,5 +1,6 @@
 package com.github.UsefulHands.reception.features.room;
 
+import com.github.UsefulHands.reception.features.room.dtos.RoomDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

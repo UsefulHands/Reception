@@ -2,7 +2,8 @@ package com.github.UsefulHands.reception.features.user;
 
 import com.github.UsefulHands.reception.common.exception.*;
 import com.github.UsefulHands.reception.common.security.JwtService;
-import com.github.UsefulHands.reception.features.audit.AuditLogService;
+import com.github.UsefulHands.reception.features.user.dtos.UserDto;
+import com.github.UsefulHands.reception.features.user.dtos.UserLoginRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

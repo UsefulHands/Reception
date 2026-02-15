@@ -3,10 +3,8 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from './profile.service';
-import {PasswordData} from './password.data';
-import {UserProfile} from './user.profile';
+import {PasswordData, UserProfile, ProfileUpdateRequest} from './models/profile.model';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
-import {ProfileUpdateRequest} from './profile.update.request';
 
 @Component({
   selector: 'app-profile',

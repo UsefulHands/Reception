@@ -2,6 +2,8 @@ package com.github.UsefulHands.reception.features.guest;
 
 import com.github.UsefulHands.reception.common.exception.ResourceNotFoundException;
 import com.github.UsefulHands.reception.common.exception.UserNotFoundException;
+import com.github.UsefulHands.reception.features.guest.dtos.GuestDto;
+import com.github.UsefulHands.reception.features.guest.dtos.GuestProfileUpdateRequest;
 import com.github.UsefulHands.reception.features.user.UserEntity;
 import com.github.UsefulHands.reception.features.user.UserService;
 import jakarta.persistence.EntityNotFoundException;

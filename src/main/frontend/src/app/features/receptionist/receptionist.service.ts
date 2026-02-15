@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ReceptionistModel } from './receptionist.model';
-import { ReceptionistRegistrationRequest } from './receptionist.registration.request';
+import {ReceptionistModel, ReceptionistRegistrationRequest} from './models/receptionist.model';
 import {ApiResponse} from '../../core/models/api/ApiResponse';
 
 @Injectable({
